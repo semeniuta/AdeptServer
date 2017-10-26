@@ -90,17 +90,15 @@
 	SET #orig = #PPOINT(0,-90,180,0,90,0)
 	SET #intermediate = #PPOINT(-100,-90,180,0,90,0)
 	SET #close_to_feeder = #PPOINT(-100,-54,185,0,50,0)
-
-	; test
 	SET insp_approach = TRANS(558.356,-365.489,443.313,36.215,175.322,123.243)
 
+	; test 
 	SET #over_griphome_2 = #PPOINT(-55.4,-121.9,219.6,0,90,-90)
 	SET over_griphome_1 = TRANS(167.9,-243.3,600,0,180,-90)	; to be further refined
 	SET test_1 = TRANS(480,0,500,0,180,-90)
 
 	; IP addresses
 	$ip_vbox = "172.16.0.125"
-
 .END
 
 .PROGRAM gripper_close()
@@ -245,12 +243,22 @@
 
 .END
 
-.PROGRAM get_tool()
-
-	tool_id = 26 ; tool id for tool number 1
+.PROGRAM get_tool(id)
 
 	ATTACH ()
-	CALL r1.gettool(tool_id)
+	CALL r1.gettool(id)
+.END
+
+.PROGRAM get_calibtool()
+
+	CALL get_tool(11)
+
+.END
+
+.PROGRAM get_tool26()
+
+	CALL get_tool(26)
+
 .END
 
 .LOCATIONS
@@ -268,7 +276,6 @@
 
 .REALS
  index      0
- tool_id    26
 .END
 
 .DOUBLES
