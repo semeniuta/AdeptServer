@@ -1,0 +1,420 @@
+.PROGRAM osplayground()
+.END
+
+.PROGRAM checksig()
+
+	SIGNAL -99, 100
+	TYPE SIG(99), SIG(100)
+	SIGNAL 99, -100
+	TYPE SIG(99), SIG(100)
+
+	TYPE SIG(3001), SIG(3002)
+	SIGNAL 3001, -3002
+
+.END
+
+.PROGRAM closetofeeder()
+
+	ATTACH ()
+	MOVE #close_to_feeder
+	BREAK
+
+.END
+
+.PROGRAM gohome()
+
+	ATTACH ()
+	MOVE #orig
+	BREAK
+
+.END
+
+.PROGRAM gripperop()
+
+	CALL enable_air()
+	CALL gripper_close()
+
+	CALL gripper_open()
+
+	;CALL disable_air()
+
+.END
+
+.PROGRAM interm()
+	ATTACH ()
+	MOVE #intermediate
+	BREAK
+.END
+
+.PROGRAM move2feederold()
+	CALL defvars()
+
+	MOVE #orig
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #close_to_feeder
+	BREAK
+
+	diff_z = 104.8
+	MOVE HERE:TRANS(0,0,diff_z,0,0,0)
+	BREAK
+
+.END
+
+.PROGRAM move2pose(pose_arr[])
+
+	MOVE TRANS(pose_arr[0],pose_arr[1],pose_arr[2],pose_arr[3],pose_arr[4],pose_arr[5])
+
+.END
+
+.PROGRAM movendrop()
+
+	ATTACH ()
+
+	CALL defvars()
+	CALL enable_air()
+
+	MOVE #orig
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #close_to_feeder
+	BREAK
+	CALL gripper_open()
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #orig
+	BREAK
+
+.END
+
+.PROGRAM movenwrite()
+	ATTACH ()
+	CALL defvars()
+
+	ATTACH (lun, 4) "NFS"
+	CALL typeiostat("attaching", lun)
+	$fname = "poses.csv"
+	FOPENA (lun) $fname
+	CALL typeiostat("opening a file", lun)
+
+	FOR i = 1 TO 3 STEP 1
+	    TYPE i
+
+	    MOVE #orig
+	    BREAK
+
+	    MOVE #intermediate
+	    BREAK
+
+	    MOVE #close_to_feeder
+	    BREAK
+
+	    HERE c2f_pose
+	    DECOMPOSE c2f[] = c2f_pose
+	    target_z = 250.911
+	    MOVE TRANS(c2f[0],c2f[1],target_z,c2f[3],c2f[4],c2f[5])
+	    BREAK
+	    WAIT.EVENT , 2
+
+	    HERE pose
+	    DECOMPOSE pose_arr[] = pose
+	    ;CALL writecsvline(lun, pose_arr[])
+
+	    n = LAST(pose_arr[])
+	    FOR j = 0 TO n-1
+		WRITE (lun) pose_arr[j], /S
+		WRITE (lun) ",", /S
+	    END
+	    WRITE (lun) pose_arr[n]
+
+	    MOVE #intermediate
+	    BREAK
+
+	    MOVE #orig
+	    BREAK
+
+
+	END
+
+	FCLOSE (lun)
+	DETACH (lun)
+
+.END
+
+.PROGRAM pick()
+	CALL defvars()
+
+	ATTACH ()
+
+	MOVE #orig
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #close_to_feeder
+	BREAK
+
+	HERE c2f_pose
+	DECOMPOSE c2f[] = c2f_pose
+	target_z = 249
+	MOVE TRANS(c2f[0],c2f[1],target_z,c2f[3],c2f[4],c2f[5])
+	BREAK
+	WAIT.EVENT , 2
+
+
+
+.END
+
+.PROGRAM pickndrop()
+
+	ATTACH ()
+	WAIT.EVENT , 2
+	CALL pick()
+	CALL gripper_close()
+
+	MOVE #close_to_feeder
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #orig
+	BREAK
+
+	WAIT.EVENT , 2
+	CALL movendrop()
+
+.END
+
+.PROGRAM playground()
+
+	CALLS "gripper_close"()
+.END
+
+.PROGRAM simplemove()
+
+	ATTACH ()
+	CALL defvars()
+
+	;MOVE #orig
+	;BREAK
+
+	;MOVE #intermediate
+	;BREAK
+
+	MOVE #close_to_feeder
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #orig
+	BREAK
+
+
+.END
+
+.PROGRAM skillextest()
+	$a = "movehome"
+	$b = "moveinterm"
+	$c = "move2feeder"
+	$br = "break"
+
+	CALL skillexec($c)
+	CALL skillexec($br)
+	CALL skillexec($b)
+	CALL skillexec($br)
+	CALL skillexec($a)
+	CALL skillexec($br)
+.END
+
+.PROGRAM tcptestsrv()
+
+	AUTO do_wait, no_wait, handle, lun, repeat_loop
+
+	do_wait = 0
+	no_wait = 1
+
+	ATTACH (lun, 4) "TCP"
+	CALL typeiostat("establishing TCP server LUN", lun)
+
+	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 1024"
+	CALL typeiostat("creating server socket", lun)
+
+	repeat_loop = TRUE
+	WHILE repeat_loop DO
+
+	    WAIT
+	    READ (lun, handle, do_wait) $input
+	    status = IOSTAT(lun)
+	    CASE status OF
+	      VALUE 100:
+		TYPE "Connection established"
+	      VALUE 1:
+		TYPE "Received message ", $input
+	      VALUE 101:
+		TYPE "Connection closed"
+	    END
+
+	    ;TYPE $input
+
+	END
+
+
+	FCLOSE (lun)
+	DETACH (lun)
+	CALL typeiostat("closing", lun)
+.END
+
+.PROGRAM testclient()
+	;lun = -10
+	AUTO lun
+	CALL defvars()
+	CALL tcpcreateclient($ip_vbox, 8888, lun)
+	CALL tcpdestrclient(lun)
+.END
+
+.PROGRAM writenfs()
+
+	;AUTO nfslun
+	;nfslun = 27
+
+
+	;ATTACH (lun, 4) "DISK"
+	ATTACH (lun, 4) "NFS"
+	CALL typeiostat("attaching", lun)
+
+	;$fname = "xc:\oleksandr_vplus\test.dat"
+
+	$fname = "alex_nfs.dat"
+
+	FOPENW (lun) $fname
+	CALL typeiostat("opening a file", lun)
+	rnd = RANDOM
+	WRITE (lun) $TIME(), rnd
+	CALL typeiostat("writing attempt", lun)
+	TYPE $TIME(), rnd, lun
+	FCLOSE (lun)
+	DETACH (lun)
+
+
+.END
+
+.PROGRAM move2rig()
+
+	CALL defvars()
+	MOVE insp_approach
+
+.END
+
+.PROGRAM mv.feeder2rig()
+
+	CALL defvars()
+
+	HERE c2f_pose
+	DECOMPOSE c2f[] = c2f_pose
+	z_offset = 125
+	MOVE TRANS(c2f[0],c2f[1],c2f[2]+z_offset,c2f[3],c2f[4],c2f[5])
+
+	CALL move2rig()
+
+.END
+
+.PROGRAM mv.insp()
+
+	CALL defvars()
+
+	HERE ia_pose
+	DECOMPOSE ia[] = ia_pose
+
+	z_offset = -95
+
+	MOVE TRANS(ia[0],ia[1],ia[2]+z_offset,ia[3],ia[4],ia[5])
+
+
+.END
+
+.PROGRAM test.inspect()
+
+	CALL movehome()
+	BREAK
+	CALL moveinterm()
+	BREAK
+	CALL move2feeder()
+	BREAK
+	CALL mv.feeder2rig()
+	BREAK
+	CALL mv.insp()
+	BREAK
+
+.END
+
+.PROGRAM pick2()
+	CALL defvars()
+
+	ATTACH ()
+
+	MOVE #orig
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #close_to_feeder
+	BREAK
+
+	HERE c2f_pose
+	DECOMPOSE c2f[] = c2f_pose
+	target_z = 221.5
+	MOVE TRANS(c2f[0],c2f[1],target_z,c2f[3],c2f[4],c2f[5])
+	BREAK
+	WAIT.EVENT , 2
+
+.END
+
+.LOCATIONS
+ c2f_pose    0.17361109 0.984659433 0.017465383 0.984809637 -0.173637584 1.84975875E-07
+ 3.03282915E-03 0.017200045 -0.999847472 -113.364929199 -642.925170898 352.567779541
+#close_to_feeder  -100 -54 185 0 50 0
+ ia_pose     -0.053298626 0.997577131 0.044709396 0.996407807 0.050178848 0.068216056
+ 0.065807328 0.048184618 -0.99666822 558.348144531 -365.501251221 443.312927246
+ insp_approach  -0.053321108 0.997576058 0.044708055 0.996407151 0.050201692 0.068209276
+ 0.065799527 0.048184421 -0.996668756 558.356018066 -365.489013672 443.312988281
+#intermediate  -100 -90 180 0 90 0
+#orig        0 -90 180 0 90 0
+.END
+
+.REALS
+ c2f[0]     -113.364929199
+ c2f[1]     -642.925170898
+ c2f[2]     352.567779541
+ c2f[3]     80.000007629
+ c2f[4]     178.999252319
+ c2f[5]     179.999389648
+ ia[0]      558.348144531
+ ia[1]      -365.501251221
+ ia[2]      443.312927246
+ ia[3]      36.211868286
+ ia[4]      175.321640015
+ ia[5]      123.241172791
+ target_z   221.5
+ z_offset   -95
+.END
+
+.DOUBLES
+.END
+
+.STRINGS
+$ip_vbox    "172.16.0.125"
+.END
+
+

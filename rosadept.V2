@@ -1,17 +1,4 @@
-.PROGRAM playground()
-
-	$a = "movehome"
-	$b = "moveinterm"
-	$c = "move2feeder"
-	$br = "break"
-
-	CALL skillexec($c)
-	CALL skillexec($br)
-	CALL skillexec($b)
-	CALL skillexec($br)
-	CALL skillexec($a)
-	CALL skillexec($br)
-
+.PROGRAM rosadept()
 .END
 
 .PROGRAM disable_air()
@@ -79,7 +66,7 @@
 	      VALUE 1:
 		TYPE "Received message ", $input
 
-		CALLS $input()
+		CALL skillexec($input)
 
 	      VALUE 101:
 		TYPE "Connection closed"
@@ -97,12 +84,18 @@
 
 .PROGRAM defvars()
 
+	ATTACH ()
+
 	; Transformations and precision points
 	SET #orig = #PPOINT(0,-90,180,0,90,0)
 	SET #intermediate = #PPOINT(-100,-90,180,0,90,0)
 	SET #close_to_feeder = #PPOINT(-100,-54,185,0,50,0)
-	SET over_griphome_1 = TRANS(167.9,-243.3,600,0,180,-90)	; to be further refined
+
+	; test
+	SET insp_approach = TRANS(558.356,-365.489,443.313,36.215,175.322,123.243)
+
 	SET #over_griphome_2 = #PPOINT(-55.4,-121.9,219.6,0,90,-90)
+	SET over_griphome_1 = TRANS(167.9,-243.3,600,0,180,-90)	; to be further refined
 	SET test_1 = TRANS(480,0,500,0,180,-90)
 
 	; IP addresses
@@ -237,11 +230,34 @@
 	BREAK
 .END
 
+.PROGRAM put_tool()
+
+	AUTO REAL lastspeed
+	AUTO REAL id
+
+	id = 26
+
+	ATTACH ()
+	lastspeed = SPEED(2)
+	SPEED 50 ALWAYS
+	CALL r._puttool(1, id, index)
+	SPEED lastspeed ALWAYS
+
+.END
+
+.PROGRAM get_tool()
+
+	tool_id = 26 ; tool id for tool number 1
+
+	ATTACH ()
+	CALL r1.gettool(tool_id)
+.END
+
 .LOCATIONS
 #close_to_feeder  -100 -54 185 0 50 0
+ insp_approach  -0.053321108 0.997576058 0.044708055 0.996407151 0.050201692 0.068209276
+ 0.065799527 0.048184421 -0.996668756 558.356018066 -365.489013672 443.312988281
 #intermediate  -100 -90 180 0 90 0
- now         -1 -2.43559425E-05 6.79499681E-06 -2.43559498E-05 1 -1.1993726E-06
- -6.7949677E-06 -1.19953802E-06 -1 479.999237061 -4.78624686E-04 709.999694824
 #orig        0 -90 180 0 90 0
  over_griphome_1  0 -1 0 -1 0 0
  0 0 -1 167.899993896 -243.300003052 600
@@ -251,36 +267,15 @@
 .END
 
 .REALS
- err_code   1
- i          6
- nparams    0
- p[0]       0
- p[1]       10
- p[2]       5
- p[3]       0
- p[4]       20
- p[5]       0
- pitch      20
- roll       0
- status     101
- x          0
- y          10
- yaw        0
- z          5
+ index      0
+ tool_id    26
 .END
 
 .DOUBLES
 .END
 
 .STRINGS
-$a          "movehome"
-$b          "moveinterm"
-$br         "break"
-$c          "move2feeder"
-$func       "break"
-$input      ""
 $ip_vbox    "172.16.0.125"
-$tmp        ""
 .END
 
 
