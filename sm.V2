@@ -12,11 +12,11 @@
 	MOVE #close_to_feeder
 	BREAK
 
-	;MOVE #intermediate
-	;BREAK
+	MOVE #intermediate
+	BREAK
 
-	;MOVE #orig
-	;BREAK
+	MOVE #orig
+	BREAK
 
 
 .END
@@ -59,38 +59,6 @@
 
 .END
 
-.PROGRAM typeiostat($op_string, lun)
-
-	err_code = IOSTAT(lun)
-	TYPE "After ", $op_string, ":", err_code
-	IF err_code < 0 THEN
-	    TYPE $ERROR(err_code)
-	END
-
-.END
-
-.PROGRAM enable_air()
-
-	IF SIG(8) == FALSE THEN
-	    SIGNAL 8
-	END
-.END
-
-.PROGRAM defvars()
-
-	; Transformations and precision points
-	SET #orig = #PPOINT(0,-90,180,0,90,0)
-	SET #intermediate = #PPOINT(-100,-90,180,0,90,0)
-	SET #close_to_feeder = #PPOINT(-100,-54,185,0,50,0)
-	SET over_griphome_1 = TRANS(167.9,-243.3,600,0,180,-90)	; to be further refined
-	SET #over_griphome_2 = #PPOINT(-55.4,-121.9,219.6,0,90,-90)
-	SET test_1 = TRANS(480,0,500,0,180,-90)
-
-	; IP addresses
-	$ip_vbox = "172.16.0.125"
-
-.END
-
 .PROGRAM gripperop()
 
 	CALL enable_air()
@@ -100,73 +68,6 @@
 
 	;CALL disable_air()
 
-.END
-
-.PROGRAM disable_air()
-
-	IF SIG(8) THEN
-	    SIGNAL -8
-	END
-
-.END
-
-.PROGRAM gripper_open()
-
-	CALL enable_air()
-
-	;TYPE SIG(99), SIG(-100)
-
-	;IF SIG(99) AND SIG(-100) THEN
-	;SIGNAL -99, 100
-	;END
-
-	SIGNAL -99, 100
-
-.END
-
-.PROGRAM gripper_close()
-
-	CALL enable_air()
-	;IF SIG(-99) AND SIG(100) THEN
-	;SIGNAL 99, -100
-	;END
-
-	SIGNAL 99, -100
-
-.END
-
-.PROGRAM tcpcreateclient($ip, port, lun)
-	ATTACH (lun, 4) "TCP"
-	;CALL typeiostat("establishing TCP client LUN", lun)
-
-	IF IOSTAT(lun) < 0 THEN
-	    CALL tcpdestrclient(lun)
-	END
-
-	FOPEN (lun, 0) $ip, " /REMOTE_PORT", port, " /BUFFER_SIZE 1024"
-	;CALL typeiostat("creating client socket", lun)
-
-	IF IOSTAT(lun) < 0 THEN
-	    CALL tcpdestrclient(lun)
-	END
-.END
-
-.PROGRAM tcpdestrclient(lun)
-	FCLOSE (lun)
-	DETACH (lun)
-	CALL typeiostat("destroying TCP client", lun)
-.END
-
-.PROGRAM tcpsend($ip, port, $msg)
-	AUTO lun
-
-	ATTACH (lun, 4) "TCP"
-	FOPEN (lun, 0) $ip, " /REMOTE_PORT", port, " /BUFFER_SIZE 1024"
-
-	WRITE (lun) $msg
-
-	FCLOSE (lun)
-	DETACH (lun)
 .END
 
 .PROGRAM tcptestsrv()
@@ -209,7 +110,7 @@
 
 .PROGRAM testclient()
 	;lun = -10
-	;AUTO lun
+	AUTO lun
 	CALL defvars()
 	CALL tcpcreateclient($ip_vbox, 8888, lun)
 	CALL tcpdestrclient(lun)
@@ -326,16 +227,14 @@
 
 	    HERE pose
 	    DECOMPOSE pose_arr[] = pose
-	    CALL writecsvline(lun, pose_arr[])
+	    ;CALL writecsvline(lun, pose_arr[])
 
-	    ;n = LAST(pose_arr[])
-	    ;FOR j = 0 TO n-1
-	    ;    WRITE (lun) pose_arr[j], /S
-	    ;    WRITE (lun) ",", /S
-	    ;END
-	    ;WRITE (lun) pose_arr[n]
-
-	    TYPE "Next...", i+1
+	    n = LAST(pose_arr[])
+	    FOR j = 0 TO n-1
+		WRITE (lun) pose_arr[j], /S
+		WRITE (lun) ",", /S
+	    END
+	    WRITE (lun) pose_arr[n]
 
 	    MOVE #intermediate
 	    BREAK
@@ -351,18 +250,6 @@
 
 .END
 
-.PROGRAM writecsvline(lun, arr[])
-	AUTO i
-	n = LAST(arr[])
-	$res = ""
-	FOR i = 0 TO n-1
-	    $res = $res+$ENCODE(arr[i])+","
-	END
-	$res = $res+$ENCODE(arr[i])+$CHR(9)
-
-	WRITE (lun) $res
-.END
-
 .PROGRAM pickndrop()
 
 	ATTACH ()
@@ -374,73 +261,29 @@
 
 .END
 
-.PROGRAM rosposecl()
+.PROGRAM move2pose(pose_arr[])
 
-	CALL defvars()
-	CALL tcpcreateclient($ip_vbox, 8888, lun)
-
-	HERE pose
-	DECOMPOSE pose_arr[] = pose
-
-	CALL writecsvline(lun, pose_arr[])
-
-	CALL tcpdestrclient(lun)
-
-.END
-
-.PROGRAM testcompound()
-
-	$s = ""
-	TYPE $s
-	$s = $s+$ENCODE(23)
-	TYPE $s
-
+	MOVE TRANS(pose_arr[0],pose_arr[1],pose_arr[2],pose_arr[3],pose_arr[4],pose_arr[5])
 
 .END
 
 .LOCATIONS
- c2f_pose    0.173644572 0.984654725 0.017393846 0.984803736 -0.173670843 -4.03297292E-07
- 3.0204067E-03 0.017129594 -0.999848664 -113.349739075 -642.838928223 353.409118652
 #close_to_feeder  -100 -54 185 0 50 0
 #intermediate  -100 -90 180 0 90 0
 #orig        0 -90 180 0 90 0
- over_griphome_1  0 -1 0 -1 0 0
- 0 0 -1 167.899993896 -243.300003052 600
-#over_griphome_2  -55.400001526 -121.900001526 219.600006104 0 90 -90
- pose        0.173644662 0.984654784 0.017393062 0.984803736 -0.173670933 -4.04834225E-07
- 3.02027096E-03 0.017128823 -0.999848723 -113.349746704 -642.838989258 250.910873413
- test_1      0 -1 0 -1 0 0
- 0 0 -1 480 0 500
 .END
 
 .REALS
- c2f[0]     -113.349739075
- c2f[1]     -642.838928223
- c2f[2]     353.409118652
- c2f[3]     80.000007629
- c2f[4]     179.003356934
- c2f[5]     -179.998672485
- err_code   1
- i          4
- lun        31
- n          5
- pose_arr[0] -113.349746704
- pose_arr[1] -642.838989258
- pose_arr[2] 250.910873413
- pose_arr[3] 80.000007629
- pose_arr[4] 179.00340271
- pose_arr[5] -179.998672485
- target_z   250.910995483
+ i          0
+ status     101
 .END
 
 .DOUBLES
 .END
 
 .STRINGS
-$fname      "poses.csv"
+$input      ""
 $ip_vbox    "172.16.0.125"
-$res        " -113.3497, -642.839, 250.9109, 80.00001, 179.0034, -179.9987^i"
-$s          " 23"
 .END
 
 

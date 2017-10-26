@@ -1,0 +1,295 @@
+.PROGRAM playground()
+
+	CALL decodeskill("moverelative:0,0,5,0,0,0", $func, p[], nparams)
+
+	TYPE $func
+	FOR i = 0 TO (nparams-2)
+	    TYPE p[i]
+	END
+
+	CASE nparams OF
+	  VALUE 0:
+	    CALLS $func()
+	  VALUE 1:
+	    CALLS $func(p[0])
+	  VALUE 2:
+	    CALLS $func(p[0], p[1])
+	  VALUE 3:
+	    CALLS $func(p[0], p[1], p[2])
+	  VALUE 4:
+	    CALLS $func(p[0], p[1], p[2], p[3])
+	  VALUE 5:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4])
+	  VALUE 6:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2])
+	  VALUE 7:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2], p[2])
+	  VALUE 8:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2], p[2], p[2], p[2])
+	  VALUE 9:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2], p[2], p[2], p[2], p[2])
+	  VALUE 10:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2], p[2], p[2], p[2], p[2], p[2])
+	  VALUE 11:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2], p[2], p[2], p[2], p[2], p[2], p[2])
+	  VALUE 12:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
+	  VALUE 13:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
+	  VALUE 14:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
+	  VALUE 15:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
+	  VALUE 16:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
+	  VALUE 17:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
+	  VALUE 18:
+	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
+	  VALUE 19:
+	    CALLS $func(p[0], p[1], p[2])
+	  VALUE 20:
+	    CALLS $func(p[0], p[1], p[2])
+
+
+
+	END
+
+
+
+	IF nparams == 0 THEN
+	    CALLS $func()
+	ELSE
+	    IF nparams == 1 THEN
+		CALLS $func(params[0])
+	    ELSE
+		IF nparams == 2 THEN
+		    CALLS $func(params[0])
+		END
+	    END
+	END
+
+.END
+
+.PROGRAM disable_air()
+
+	IF SIG(8) THEN
+	    SIGNAL -8
+	END
+
+.END
+
+.PROGRAM enable_air()
+
+	IF SIG(8) == FALSE THEN
+	    SIGNAL 8
+	END
+.END
+
+.PROGRAM decodeskill($msg, $func, params[], nparams)
+
+	$func = $DECODE($msg,":",0)
+	$tmp = $DECODE($msg,":",1)
+
+	IF $tmp == "" THEN
+	    nparams = 0
+	    TYPE "Only func name"
+	ELSE
+
+	    i = 0
+	    nparams = 1
+	    DO
+		$tmp = $DECODE($msg,",",0)
+		params[i] = VAL($tmp)
+		nparams = nparams+1
+		$tmp = $DECODE($msg,",",1)
+		i = i+1
+
+	    UNTIL $msg == ""
+
+	END
+
+
+.END
+
+.PROGRAM serverloop()
+
+	AUTO do_wait, no_wait, handle, lun, repeat_loop
+
+	do_wait = 0
+	no_wait = 1
+
+	ATTACH (lun, 4) "TCP"
+	CALL typeiostat("establishing TCP server LUN", lun)
+
+	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 1024"
+	CALL typeiostat("creating server socket", lun)
+
+	repeat_loop = TRUE
+	WHILE repeat_loop DO
+
+	    WAIT
+	    READ (lun, handle, do_wait) $input
+	    status = IOSTAT(lun)
+	    CASE status OF
+	      VALUE 100:
+		TYPE "Connection established"
+	      VALUE 1:
+		TYPE "Received message ", $input
+
+		CALLS $input()
+
+	      VALUE 101:
+		TYPE "Connection closed"
+	    END
+
+	END
+
+
+	FCLOSE (lun)
+	DETACH (lun)
+	CALL typeiostat("closing", lun)
+
+
+.END
+
+.PROGRAM defvars()
+
+	; Transformations and precision points
+	SET #orig = #PPOINT(0,-90,180,0,90,0)
+	SET #intermediate = #PPOINT(-100,-90,180,0,90,0)
+	SET #close_to_feeder = #PPOINT(-100,-54,185,0,50,0)
+	SET over_griphome_1 = TRANS(167.9,-243.3,600,0,180,-90)	; to be further refined
+	SET #over_griphome_2 = #PPOINT(-55.4,-121.9,219.6,0,90,-90)
+	SET test_1 = TRANS(480,0,500,0,180,-90)
+
+	; IP addresses
+	$ip_vbox = "172.16.0.125"
+
+.END
+
+.PROGRAM gripper_close()
+
+	CALL enable_air()
+	;IF SIG(-99) AND SIG(100) THEN
+	;SIGNAL 99, -100
+	;END
+
+	SIGNAL 99, -100
+
+.END
+
+.PROGRAM gripper_open()
+
+	CALL enable_air()
+
+	;TYPE SIG(99), SIG(-100)
+
+	;IF SIG(99) AND SIG(-100) THEN
+	;SIGNAL -99, 100
+	;END
+
+	SIGNAL -99, 100
+
+.END
+
+.PROGRAM writecsvline(lun, arr[])
+
+	n = LAST(arr[])
+	FOR i = 0 TO n-1
+	    WRITE (lun) arr[i], /S
+	    WRITE (lun) ",", /S
+	END
+	WRITE (lun) arr[n]
+
+	TYPE "Done writing"
+.END
+
+.PROGRAM typeiostat($op_string, lun)
+
+	err_code = IOSTAT(lun)
+	TYPE "After ", $op_string, ":", err_code
+	IF err_code < 0 THEN
+	    TYPE $ERROR(err_code)
+	END
+
+.END
+
+.PROGRAM tcpsend($ip, port, $msg)
+	AUTO lun
+
+	ATTACH (lun, 4) "TCP"
+	FOPEN (lun, 0) $ip, " /REMOTE_PORT", port, " /BUFFER_SIZE 1024"
+
+	WRITE (lun) $msg
+
+	FCLOSE (lun)
+	DETACH (lun)
+.END
+
+.PROGRAM tcpcreateclient($ip, port, lun)
+	ATTACH (lun, 4) "TCP"
+	;CALL typeiostat("establishing TCP client LUN", lun)
+
+	IF IOSTAT(lun) < 0 THEN
+	    CALL tcpdestrclient(lun)
+	END
+
+	FOPEN (lun, 0) $ip, " /REMOTE_PORT", port, " /BUFFER_SIZE 1024"
+	;CALL typeiostat("creating client socket", lun)
+
+	IF IOSTAT(lun) < 0 THEN
+	    CALL tcpdestrclient(lun)
+	END
+.END
+
+.PROGRAM tcpdestrclient(lun)
+	FCLOSE (lun)
+	DETACH (lun)
+	CALL typeiostat("destroying TCP client", lun)
+.END
+
+.PROGRAM move_relative(x, y, z, rl, pt, yw)
+
+	HERE now
+	MOVE now:TRANS(x,y,z,rl,pt,yw)
+
+.END
+
+.LOCATIONS
+#close_to_feeder  -100 -54 185 0 50 0
+#intermediate  -100 -90 180 0 90 0
+ now         -1 -3.09112729E-05 2.39674919E-05 -3.09105853E-05 1 2.8724442E-05
+ -2.39683795E-05 2.87237017E-05 -1 480.017547607 2.29789619E-03 729.973449707
+#orig        0 -90 180 0 90 0
+ over_griphome_1  0 -1 0 -1 0 0
+ 0 0 -1 167.899993896 -243.300003052 600
+#over_griphome_2  -55.400001526 -121.900001526 219.600006104 0 90 -90
+ test_1      0 -1 0 -1 0 0
+ 0 0 -1 480 0 500
+.END
+
+.REALS
+ err_code   1
+ i          0
+ nparams    0
+ params[0]  0
+ params[1]  10
+ params[2]  10
+ params[3]  4
+ params[4]  5
+ params[5]  6
+ status     101
+.END
+
+.DOUBLES
+.END
+
+.STRINGS
+$func       "movehome"
+$input      ""
+$ip_vbox    "172.16.0.125"
+$tmp        ""
+.END
+
+
