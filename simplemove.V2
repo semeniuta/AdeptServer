@@ -1,33 +1,22 @@
 .PROGRAM simplemove()
 
-
-	;grip.close = 99
-	;grip.open = 100
-
-	;SIGNAL -grip.open, grip.close
-
+	ATTACH ()
 	CALL defvars()
 
 	MOVE #orig
 	BREAK
 
-	;MOVE test_1
-	;BREAK
-
-	;MOVE HERE:TRANS(0,0,0,0,0,-90)
-
 	MOVE #intermediate
 	BREAK
 
 	MOVE #close_to_feeder
-	;MOVE #over_griphome_2
 	BREAK
 
-	MOVE #intermediate
-	BREAK
+	;MOVE #intermediate
+	;BREAK
 
-	MOVE #orig
-	BREAK
+	;MOVE #orig
+	;BREAK
 
 
 .END
@@ -250,6 +239,7 @@
 .END
 
 .PROGRAM movehome()
+	ATTACH ()
 	CALL defvars()
 
 	MOVE #intermediate
@@ -289,13 +279,58 @@
 	MOVE #close_to_feeder
 	BREAK
 
-	diff_z = 102
+	diff_z = 101.612
 	MOVE HERE:TRANS(0,0,diff_z,0,0,0)
 	BREAK
 
 	CALL gripper_close()
 
-	CALL movehome()
+	;CALL movehome()
+
+.END
+
+.PROGRAM movenwrite()
+	ATTACH ()
+	CALL defvars()
+
+	ATTACH (lun, 4) "NFS"
+	CALL typeiostat("attaching", lun)
+	$fname = "poses.txt"
+	FOPENA (lun) $fname
+	CALL typeiostat("opening a file", lun)
+
+	FOR i = 1 TO 2 STEP 1
+
+
+	    MOVE #orig
+	    BREAK
+
+	    MOVE #intermediate
+	    BREAK
+
+	    MOVE #close_to_feeder
+	    BREAK
+
+	    HERE pose
+	    DECOMPOSE pose_arr[] = pose
+	    ;WRITE (lun) $TRANSB(pose)
+	    FOR j = 0 TO 5 STEP 1
+		WRITE (lun) pose_arr[j]
+	    END
+
+	    CALL typeiostat("writing attempt", lun)
+
+	    MOVE #intermediate
+	    BREAK
+
+	    MOVE #orig
+	    BREAK
+
+
+	END
+
+	FCLOSE (lun)
+	DETACH (lun)
 
 .END
 
@@ -306,20 +341,31 @@
  over_griphome_1  0 -1 0 -1 0 0
  0 0 -1 167.899993896 -243.300003052 600
 #over_griphome_2  -55.400001526 -121.900001526 219.600006104 0 90 -90
+ pose        0.173630863 0.98465693 0.01741223 0.98480618 -0.173657179 -1.62164028E-07
+ 3.02359904E-03 0.017147699 -0.999848425 -113.359161377 -642.89239502 352.897827148
  test_1      0 -1 0 -1 0 0
  0 0 -1 480 0 500
 .END
 
 .REALS
- diff_z     104.800003052
+ diff_z     101.611999512
  err_code   1
+ i          3
+ j          6
  lun        31
+ pose_arr[0] -113.359161377
+ pose_arr[1] -642.89239502
+ pose_arr[2] 352.897827148
+ pose_arr[3] 80.000007629
+ pose_arr[4] 179.002304077
+ pose_arr[5] -179.999481201
 .END
 
 .DOUBLES
 .END
 
 .STRINGS
+$fname      "poses.txt"
 $ip_vbox    "172.16.0.125"
 .END
 
