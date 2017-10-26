@@ -141,36 +141,6 @@
 
 .END
 
-.PROGRAM movehome()
-	ATTACH ()
-	WAIT.EVENT , 4
-	CALL defvars()
-
-	MOVE #intermediate
-	BREAK
-
-	MOVE #orig
-	BREAK
-.END
-
-.PROGRAM move2feeder()
-	CALL defvars()
-
-	MOVE #orig
-	BREAK
-
-	MOVE #intermediate
-	BREAK
-
-	MOVE #close_to_feeder
-	BREAK
-
-	diff_z = 104.8
-	MOVE HERE:TRANS(0,0,diff_z,0,0,0)
-	BREAK
-
-.END
-
 .PROGRAM pick()
 	CALL defvars()
 
@@ -267,6 +237,24 @@
 
 .END
 
+.PROGRAM move2feederold()
+	CALL defvars()
+
+	MOVE #orig
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #close_to_feeder
+	BREAK
+
+	diff_z = 104.8
+	MOVE HERE:TRANS(0,0,diff_z,0,0,0)
+	BREAK
+
+.END
+
 .LOCATIONS
 #close_to_feeder  -100 -54 185 0 50 0
 #intermediate  -100 -90 180 0 90 0
@@ -274,7 +262,7 @@
 .END
 
 .REALS
- i          0
+ i          6
  status     101
 .END
 

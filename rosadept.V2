@@ -1,73 +1,15 @@
 .PROGRAM playground()
 
-	CALL decodeskill("moverelative:0,0,5,0,0,0", $func, p[], nparams)
+	$a = "movehome"
+	$b = "moveinterm"
+	$c = "move2feeder"
 
-	TYPE $func
-	FOR i = 0 TO (nparams-2)
-	    TYPE p[i]
-	END
-
-	CASE nparams OF
-	  VALUE 0:
-	    CALLS $func()
-	  VALUE 1:
-	    CALLS $func(p[0])
-	  VALUE 2:
-	    CALLS $func(p[0], p[1])
-	  VALUE 3:
-	    CALLS $func(p[0], p[1], p[2])
-	  VALUE 4:
-	    CALLS $func(p[0], p[1], p[2], p[3])
-	  VALUE 5:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4])
-	  VALUE 6:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2])
-	  VALUE 7:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2], p[2])
-	  VALUE 8:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2], p[2], p[2], p[2])
-	  VALUE 9:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2], p[2], p[2], p[2], p[2])
-	  VALUE 10:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2], p[2], p[2], p[2], p[2], p[2])
-	  VALUE 11:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[2], p[2], p[2], p[2], p[2], p[2], p[2])
-	  VALUE 12:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
-	  VALUE 13:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
-	  VALUE 14:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
-	  VALUE 15:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
-	  VALUE 16:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
-	  VALUE 17:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
-	  VALUE 18:
-	    CALLS $func(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19])
-	  VALUE 19:
-	    CALLS $func(p[0], p[1], p[2])
-	  VALUE 20:
-	    CALLS $func(p[0], p[1], p[2])
-
-
-
-	END
-
-
-
-	IF nparams == 0 THEN
-	    CALLS $func()
-	ELSE
-	    IF nparams == 1 THEN
-		CALLS $func(params[0])
-	    ELSE
-		IF nparams == 2 THEN
-		    CALLS $func(params[0])
-		END
-	    END
-	END
+	CALL skillexec($b)
+	BREAK
+	CALL skillexec($c)
+	BREAK
+	CALL skillexec($b)
+	BREAK
 
 .END
 
@@ -93,7 +35,6 @@
 
 	IF $tmp == "" THEN
 	    nparams = 0
-	    TYPE "Only func name"
 	ELSE
 
 	    i = 0
@@ -249,18 +190,53 @@
 	CALL typeiostat("destroying TCP client", lun)
 .END
 
-.PROGRAM move_relative(x, y, z, rl, pt, yw)
+.PROGRAM move_relative(params[])
 
 	HERE now
-	MOVE now:TRANS(x,y,z,rl,pt,yw)
 
+	x = params[0]
+	y = params[1]
+	z = params[2]
+	roll = params[3]
+	pitch = params[4]
+	yaw = params[5]
+
+	MOVE now:TRANS(x,y,z,roll,pitch,yaw)
+
+.END
+
+.PROGRAM movehome()
+	CALL defvars()
+	MOVE #orig
+.END
+
+.PROGRAM skillexec($skill)
+
+	CALL decodeskill($skill+"", $func, p[], nparams)
+
+	IF nparams == 0 THEN
+	    CALLS $func()
+	ELSE
+	    CALLS $func(p[])
+	END
+
+.END
+
+.PROGRAM moveinterm()
+	CALL defvars()
+	MOVE #intermediate
+.END
+
+.PROGRAM move2feeder()
+	CALL defvars()
+	MOVE #close_to_feeder
 .END
 
 .LOCATIONS
 #close_to_feeder  -100 -54 185 0 50 0
 #intermediate  -100 -90 180 0 90 0
- now         -1 -3.09112729E-05 2.39674919E-05 -3.09105853E-05 1 2.8724442E-05
- -2.39683795E-05 2.87237017E-05 -1 480.017547607 2.29789619E-03 729.973449707
+ now         -1 -2.43559425E-05 6.79499681E-06 -2.43559498E-05 1 -1.1993726E-06
+ -6.7949677E-06 -1.19953802E-06 -1 479.999237061 -4.78624686E-04 709.999694824
 #orig        0 -90 180 0 90 0
  over_griphome_1  0 -1 0 -1 0 0
  0 0 -1 167.899993896 -243.300003052 600
@@ -271,22 +247,31 @@
 
 .REALS
  err_code   1
- i          0
+ i          6
  nparams    0
- params[0]  0
- params[1]  10
- params[2]  10
- params[3]  4
- params[4]  5
- params[5]  6
+ p[0]       0
+ p[1]       10
+ p[2]       5
+ p[3]       0
+ p[4]       20
+ p[5]       0
+ pitch      20
+ roll       0
  status     101
+ x          0
+ y          10
+ yaw        0
+ z          5
 .END
 
 .DOUBLES
 .END
 
 .STRINGS
-$func       "movehome"
+$a          "movehome"
+$b          "moveinterm"
+$c          "move2feeder"
+$func       "moveinterm"
 $input      ""
 $ip_vbox    "172.16.0.125"
 $tmp        ""
