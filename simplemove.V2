@@ -101,6 +101,10 @@
 .PROGRAM gripperop()
 
 	CALL enable_air()
+	CALL gripper_close()
+
+	CALL gripper_open()
+
 	;CALL disable_air()
 
 .END
@@ -109,6 +113,27 @@
 
 	IF SIG(8) THEN
 	    SIGNAL -8
+	END
+
+.END
+
+.PROGRAM gripper_open()
+
+	CALL enable_air()
+
+	;TYPE SIG(99), SIG(-100)
+
+	IF SIG(99) AND SIG(-100) THEN
+	    SIGNAL -99, 100
+	END
+
+.END
+
+.PROGRAM gripper_close()
+
+	CALL enable_air()
+	IF SIG(-99) AND SIG(100) THEN
+	    SIGNAL 99, -100
 	END
 
 .END
