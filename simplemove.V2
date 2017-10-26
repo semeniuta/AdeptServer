@@ -209,7 +209,7 @@
 
 .PROGRAM testclient()
 	;lun = -10
-	AUTO lun
+	;AUTO lun
 	CALL defvars()
 	CALL tcpcreateclient($ip_vbox, 8888, lun)
 	CALL tcpdestrclient(lun)
@@ -326,14 +326,16 @@
 
 	    HERE pose
 	    DECOMPOSE pose_arr[] = pose
-	    ;CALL writecsvline(lun, pose_arr[])
+	    CALL writecsvline(lun, pose_arr[])
 
-	    n = LAST(pose_arr[])
-	    FOR j = 0 TO n-1
-		WRITE (lun) pose_arr[j], /S
-		WRITE (lun) ",", /S
-	    END
-	    WRITE (lun) pose_arr[n]
+	    ;n = LAST(pose_arr[])
+	    ;FOR j = 0 TO n-1
+	    ;    WRITE (lun) pose_arr[j], /S
+	    ;    WRITE (lun) ",", /S
+	    ;END
+	    ;WRITE (lun) pose_arr[n]
+
+	    TYPE "Next...", i+1
 
 	    MOVE #intermediate
 	    BREAK
@@ -350,15 +352,15 @@
 .END
 
 .PROGRAM writecsvline(lun, arr[])
-
+	AUTO i
 	n = LAST(arr[])
+	$res = ""
 	FOR i = 0 TO n-1
-	    WRITE (lun) arr[i], /S
-	    WRITE (lun) ",", /S
+	    $res = $res+$ENCODE(arr[i])+","
 	END
-	WRITE (lun) arr[n]
+	$res = $res+$ENCODE(arr[i])+$CHR(9)
 
-	TYPE "Done writing"
+	WRITE (lun) $res
 .END
 
 .PROGRAM pickndrop()
@@ -372,40 +374,62 @@
 
 .END
 
+.PROGRAM rosposecl()
+
+	CALL defvars()
+	CALL tcpcreateclient($ip_vbox, 8888, lun)
+
+	HERE pose
+	DECOMPOSE pose_arr[] = pose
+
+	CALL writecsvline(lun, pose_arr[])
+
+	CALL tcpdestrclient(lun)
+
+.END
+
+.PROGRAM testcompound()
+
+	$s = ""
+	TYPE $s
+	$s = $s+$ENCODE(23)
+	TYPE $s
+
+
+.END
+
 .LOCATIONS
- c2f_pose    0.1736276 0.984657466 0.017408213 0.984806716 -0.173653916 -1.04279835E-07
- 3.02290148E-03 0.017143743 -0.999848425 -113.359886169 -642.896484375 352.864227295
+ c2f_pose    0.173644572 0.984654725 0.017393846 0.984803736 -0.173670843 -4.03297292E-07
+ 3.0204067E-03 0.017129594 -0.999848664 -113.349739075 -642.838928223 353.409118652
 #close_to_feeder  -100 -54 185 0 50 0
 #intermediate  -100 -90 180 0 90 0
 #orig        0 -90 180 0 90 0
  over_griphome_1  0 -1 0 -1 0 0
  0 0 -1 167.899993896 -243.300003052 600
 #over_griphome_2  -55.400001526 -121.900001526 219.600006104 0 90 -90
- pose        0.173628792 0.984657168 0.017416634 0.984806538 -0.173655137 -1.25935983E-07
- 3.02436366E-03 0.017152036 -0.999848306 -113.359306335 -642.893188477 250.910919189
+ pose        0.173644662 0.984654784 0.017393062 0.984803736 -0.173670933 -4.04834225E-07
+ 3.02027096E-03 0.017128823 -0.999848723 -113.349746704 -642.838989258 250.910873413
  test_1      0 -1 0 -1 0 0
  0 0 -1 480 0 500
 .END
 
 .REALS
- c2f[0]     -113.359886169
- c2f[1]     -642.896484375
- c2f[2]     352.864227295
+ c2f[0]     -113.349739075
+ c2f[1]     -642.838928223
+ c2f[2]     353.409118652
  c2f[3]     80.000007629
- c2f[4]     179.002532959
- c2f[5]     -179.999664307
- diff_z     101.611999512
+ c2f[4]     179.003356934
+ c2f[5]     -179.998672485
  err_code   1
  i          4
- j          5
  lun        31
  n          5
- pose_arr[0] -113.359306335
- pose_arr[1] -642.893188477
- pose_arr[2] 250.910919189
+ pose_arr[0] -113.349746704
+ pose_arr[1] -642.838989258
+ pose_arr[2] 250.910873413
  pose_arr[3] 80.000007629
- pose_arr[4] 179.002044678
- pose_arr[5] -179.999588013
+ pose_arr[4] 179.00340271
+ pose_arr[5] -179.998672485
  target_z   250.910995483
 .END
 
@@ -415,6 +439,8 @@
 .STRINGS
 $fname      "poses.csv"
 $ip_vbox    "172.16.0.125"
+$res        " -113.3497, -642.839, 250.9109, 80.00001, 179.0034, -179.9987^i"
+$s          " 23"
 .END
 
 
