@@ -19,12 +19,12 @@
 	MOVE #intermediate
 	BREAK
 
-	;MOVE #close_to_feeder
+	MOVE #close_to_feeder
 	;MOVE #over_griphome_2
-	;BREAK
+	BREAK
 
-	;MOVE #intermediate
-	;BREAK
+	MOVE #intermediate
+	BREAK
 
 	MOVE #orig
 	BREAK
@@ -138,6 +138,36 @@
 
 .END
 
+.PROGRAM tcpserver()
+
+	AUTO do_wait, no_wait, handle, lun, repeat_loop
+
+	do_wait = 0
+	no_wait = 1
+
+	ATTACH (lun, 4) "TCP"
+	CALL typeiostat("establishing TCP server", lun)
+
+	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 2 /BUFFER_SIZE 1024"
+	CALL typeiostat("creating server socket", lun)
+
+	repeat_loop = TRUE
+	WHILE repeat_loop DO
+
+	    WAIT
+	    READ (lun, handle, do_wait) $input
+	    CALL typeiostat("reading input string", lun)
+	    TYPE $input
+
+	END
+
+
+	FCLOSE (lun)
+	DETACH (lun)
+	CALL typeiostat("closing", lun)
+
+.END
+
 .LOCATIONS
 #close_to_feeder  -100 -54 185 0 50 0
 #intermediate  -100 -90 180 0 90 0
@@ -152,14 +182,12 @@
 .REALS
  err_code   1
  lun        31
- rnd        0.335395306
 .END
 
 .DOUBLES
 .END
 
 .STRINGS
-$fname      "alex_nfs.dat"
 .END
 
 
