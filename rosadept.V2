@@ -3,13 +3,14 @@
 	$a = "movehome"
 	$b = "moveinterm"
 	$c = "move2feeder"
+	$br = "break"
 
-	CALL skillexec($b)
-	BREAK
 	CALL skillexec($c)
-	BREAK
+	CALL skillexec($br)
 	CALL skillexec($b)
-	BREAK
+	CALL skillexec($br)
+	CALL skillexec($a)
+	CALL skillexec($br)
 
 .END
 
@@ -232,6 +233,10 @@
 	MOVE #close_to_feeder
 .END
 
+.PROGRAM break()
+	BREAK
+.END
+
 .LOCATIONS
 #close_to_feeder  -100 -54 185 0 50 0
 #intermediate  -100 -90 180 0 90 0
@@ -270,8 +275,9 @@
 .STRINGS
 $a          "movehome"
 $b          "moveinterm"
+$br         "break"
 $c          "move2feeder"
-$func       "moveinterm"
+$func       "break"
 $input      ""
 $ip_vbox    "172.16.0.125"
 $tmp        ""

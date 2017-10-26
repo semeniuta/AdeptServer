@@ -255,6 +255,20 @@
 
 .END
 
+.PROGRAM skillextest()
+	$a = "movehome"
+	$b = "moveinterm"
+	$c = "move2feeder"
+	$br = "break"
+
+	CALL skillexec($c)
+	CALL skillexec($br)
+	CALL skillexec($b)
+	CALL skillexec($br)
+	CALL skillexec($a)
+	CALL skillexec($br)
+.END
+
 .LOCATIONS
 #close_to_feeder  -100 -54 185 0 50 0
 #intermediate  -100 -90 180 0 90 0
@@ -270,6 +284,10 @@
 .END
 
 .STRINGS
+$a          "movehome"
+$b          "moveinterm"
+$br         "break"
+$c          "move2feeder"
 $input      ""
 $ip_vbox    "172.16.0.125"
 .END
