@@ -1,26 +1,30 @@
 .PROGRAM simplemove()
 
 
-	grip.close = 99
-	grip.open = 100
+	;grip.close = 99
+	;grip.open = 100
 
-	SIGNAL -grip.open, grip.close
+	;SIGNAL -grip.open, grip.close
 
-	SET #orig = #PPOINT(0,-90,180,0,90,0)
-	SET #intermediate = #PPOINT(-100,-90,180,0,90,0)
-	SET #close_to_feeder = #PPOINT(-100,-54,185,0,50,0)
+	CALL define_location()
 
 	MOVE #orig
 	BREAK
 
+	;MOVE test_1
+	;BREAK
+
+	;MOVE HERE:TRANS(0,0,0,0,0,-90)
+
 	MOVE #intermediate
 	BREAK
 
-	MOVE #close_to_feeder
-	BREAK
+	;MOVE #close_to_feeder
+	;MOVE #over_griphome_2
+	;BREAK
 
-	MOVE #intermediate
-	BREAK
+	;MOVE #intermediate
+	;BREAK
 
 	MOVE #orig
 	BREAK
@@ -76,16 +80,30 @@
 
 .END
 
+.PROGRAM define_location()
+
+	SET #orig = #PPOINT(0,-90,180,0,90,0)
+	SET #intermediate = #PPOINT(-100,-90,180,0,90,0)
+	SET #close_to_feeder = #PPOINT(-100,-54,185,0,50,0)
+	SET over_griphome_1 = TRANS(167.9,-243.3,600,0,180,-90)	; to be further refined
+	SET #over_griphome_2 = #PPOINT(-55.4,-121.9,219.6,0,90,-90)
+	SET test_1 = TRANS(480,0,500,0,180,-90)
+
+.END
+
 .LOCATIONS
 #close_to_feeder  -100 -54 185 0 50 0
 #intermediate  -100 -90 180 0 90 0
 #orig        0 -90 180 0 90 0
+ over_griphome_1  0 -1 0 -1 0 0
+ 0 0 -1 167.899993896 -243.300003052 600
+#over_griphome_2  -55.400001526 -121.900001526 219.600006104 0 90 -90
+ test_1      0 -1 0 -1 0 0
+ 0 0 -1 480 0 500
 .END
 
 .REALS
  err_code   1
- grip.close 99
- grip.open  100
  lun        31
  rnd        0.335395306
 .END
