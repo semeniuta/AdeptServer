@@ -1,0 +1,100 @@
+.PROGRAM simplemove()
+
+
+	grip.close = 99
+	grip.open = 100
+
+	SIGNAL -grip.open, grip.close
+
+	SET #orig = #PPOINT(0,-90,180,0,90,0)
+	SET #intermediate = #PPOINT(-100,-90,180,0,90,0)
+	SET #close_to_feeder = #PPOINT(-100,-54,185,0,50,0)
+
+	MOVE #orig
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #close_to_feeder
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #orig
+	BREAK
+
+
+.END
+
+.PROGRAM writenfs()
+
+	;AUTO nfslun
+	;nfslun = 27
+
+
+	;ATTACH (lun, 4) "DISK"
+	ATTACH (lun, 4) "NFS"
+	CALL typeiostat("attaching", lun)
+
+	;$fname = "xc:\oleksandr_vplus\test.dat"
+
+	$fname = "alex_nfs.dat"
+
+	FOPENW (lun) $fname
+	CALL typeiostat("opening a file", lun)
+	rnd = RANDOM
+	WRITE (lun) $TIME(), rnd
+	CALL typeiostat("writing attempt", lun)
+	TYPE $TIME(), rnd, lun
+	FCLOSE (lun)
+	DETACH (lun)
+
+
+.END
+
+.PROGRAM checksig()
+
+	SIGNAL -99, 100
+	TYPE SIG(99), SIG(100)
+	SIGNAL 99, -100
+	TYPE SIG(99), SIG(100)
+
+	TYPE SIG(3001), SIG(3002)
+	SIGNAL 3001, -3002
+
+.END
+
+.PROGRAM typeiostat($op_string, lun)
+
+	err_code = IOSTAT(lun)
+	TYPE "After ", $op_string, ":", err_code
+	IF err_code < 0 THEN
+	    TYPE $ERROR(err_code)
+	END
+
+.END
+
+.LOCATIONS
+#close_to_feeder  -100 -54 185 0 50 0
+#intermediate  -100 -90 180 0 90 0
+#orig        0 -90 180 0 90 0
+.END
+
+.REALS
+ err_code   1
+ grip.close 99
+ grip.open  100
+ lun        31
+ rnd        0.335395306
+.END
+
+.DOUBLES
+.END
+
+.STRINGS
+$fname      "alex_nfs.dat"
+.END
+
+
