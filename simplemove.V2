@@ -217,6 +217,8 @@
 
 .PROGRAM movendrop()
 
+	ATTACH ()
+
 	CALL defvars()
 	CALL enable_air()
 
@@ -240,6 +242,7 @@
 
 .PROGRAM movehome()
 	ATTACH ()
+	WAIT.EVENT , 4
 	CALL defvars()
 
 	MOVE #intermediate
@@ -279,9 +282,12 @@
 	MOVE #close_to_feeder
 	BREAK
 
-	diff_z = 101.612
-	MOVE HERE:TRANS(0,0,diff_z,0,0,0)
+	HERE c2f_pose
+	DECOMPOSE c2f[] = c2f_pose
+	target_z = 250.911
+	MOVE TRANS(c2f[0],c2f[1],target_z,c2f[3],c2f[4],c2f[5])
 	BREAK
+	WAIT.EVENT , 2
 
 	CALL gripper_close()
 
@@ -295,12 +301,12 @@
 
 	ATTACH (lun, 4) "NFS"
 	CALL typeiostat("attaching", lun)
-	$fname = "poses.txt"
+	$fname = "poses.csv"
 	FOPENA (lun) $fname
 	CALL typeiostat("opening a file", lun)
 
-	FOR i = 1 TO 2 STEP 1
-
+	FOR i = 1 TO 3 STEP 1
+	    TYPE i
 
 	    MOVE #orig
 	    BREAK
@@ -311,14 +317,23 @@
 	    MOVE #close_to_feeder
 	    BREAK
 
+	    HERE c2f_pose
+	    DECOMPOSE c2f[] = c2f_pose
+	    target_z = 250.911
+	    MOVE TRANS(c2f[0],c2f[1],target_z,c2f[3],c2f[4],c2f[5])
+	    BREAK
+	    WAIT.EVENT , 2
+
 	    HERE pose
 	    DECOMPOSE pose_arr[] = pose
-	    ;WRITE (lun) $TRANSB(pose)
-	    FOR j = 0 TO 5 STEP 1
-		WRITE (lun) pose_arr[j]
-	    END
+	    ;CALL writecsvline(lun, pose_arr[])
 
-	    CALL typeiostat("writing attempt", lun)
+	    n = LAST(pose_arr[])
+	    FOR j = 0 TO n-1
+		WRITE (lun) pose_arr[j], /S
+		WRITE (lun) ",", /S
+	    END
+	    WRITE (lun) pose_arr[n]
 
 	    MOVE #intermediate
 	    BREAK
@@ -334,38 +349,71 @@
 
 .END
 
+.PROGRAM writecsvline(lun, arr[])
+
+	n = LAST(arr[])
+	FOR i = 0 TO n-1
+	    WRITE (lun) arr[i], /S
+	    WRITE (lun) ",", /S
+	END
+	WRITE (lun) arr[n]
+
+	TYPE "Done writing"
+.END
+
+.PROGRAM pickndrop()
+
+	ATTACH ()
+	WAIT.EVENT , 2
+	CALL pick()
+	CALL movehome()
+	WAIT.EVENT , 2
+	CALL movendrop()
+
+.END
+
 .LOCATIONS
+ c2f_pose    0.1736276 0.984657466 0.017408213 0.984806716 -0.173653916 -1.04279835E-07
+ 3.02290148E-03 0.017143743 -0.999848425 -113.359886169 -642.896484375 352.864227295
 #close_to_feeder  -100 -54 185 0 50 0
 #intermediate  -100 -90 180 0 90 0
 #orig        0 -90 180 0 90 0
  over_griphome_1  0 -1 0 -1 0 0
  0 0 -1 167.899993896 -243.300003052 600
 #over_griphome_2  -55.400001526 -121.900001526 219.600006104 0 90 -90
- pose        0.173630863 0.98465693 0.01741223 0.98480618 -0.173657179 -1.62164028E-07
- 3.02359904E-03 0.017147699 -0.999848425 -113.359161377 -642.89239502 352.897827148
+ pose        0.173628792 0.984657168 0.017416634 0.984806538 -0.173655137 -1.25935983E-07
+ 3.02436366E-03 0.017152036 -0.999848306 -113.359306335 -642.893188477 250.910919189
  test_1      0 -1 0 -1 0 0
  0 0 -1 480 0 500
 .END
 
 .REALS
+ c2f[0]     -113.359886169
+ c2f[1]     -642.896484375
+ c2f[2]     352.864227295
+ c2f[3]     80.000007629
+ c2f[4]     179.002532959
+ c2f[5]     -179.999664307
  diff_z     101.611999512
  err_code   1
- i          3
- j          6
+ i          4
+ j          5
  lun        31
- pose_arr[0] -113.359161377
- pose_arr[1] -642.89239502
- pose_arr[2] 352.897827148
+ n          5
+ pose_arr[0] -113.359306335
+ pose_arr[1] -642.893188477
+ pose_arr[2] 250.910919189
  pose_arr[3] 80.000007629
- pose_arr[4] 179.002304077
- pose_arr[5] -179.999481201
+ pose_arr[4] 179.002044678
+ pose_arr[5] -179.999588013
+ target_z   250.910995483
 .END
 
 .DOUBLES
 .END
 
 .STRINGS
-$fname      "poses.txt"
+$fname      "poses.csv"
 $ip_vbox    "172.16.0.125"
 .END
 
