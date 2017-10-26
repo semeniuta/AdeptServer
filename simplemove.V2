@@ -127,18 +127,22 @@
 
 	;TYPE SIG(99), SIG(-100)
 
-	IF SIG(99) AND SIG(-100) THEN
-	    SIGNAL -99, 100
-	END
+	;IF SIG(99) AND SIG(-100) THEN
+	;SIGNAL -99, 100
+	;END
+
+	SIGNAL -99, 100
 
 .END
 
 .PROGRAM gripper_close()
 
 	CALL enable_air()
-	IF SIG(-99) AND SIG(100) THEN
-	    SIGNAL 99, -100
-	END
+	;IF SIG(-99) AND SIG(100) THEN
+	;SIGNAL 99, -100
+	;END
+
+	SIGNAL 99, -100
 
 .END
 
@@ -222,6 +226,79 @@
 	CALL tcpdestrclient(lun)
 .END
 
+.PROGRAM movendrop()
+
+	CALL defvars()
+	CALL enable_air()
+
+	MOVE #orig
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #close_to_feeder
+	BREAK
+	CALL gripper_open()
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #orig
+	BREAK
+
+.END
+
+.PROGRAM movehome()
+	CALL defvars()
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #orig
+	BREAK
+.END
+
+.PROGRAM move2feeder()
+	CALL defvars()
+
+	MOVE #orig
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #close_to_feeder
+	BREAK
+
+	diff_z = 104.8
+	MOVE HERE:TRANS(0,0,diff_z,0,0,0)
+	BREAK
+
+.END
+
+.PROGRAM pick()
+	CALL defvars()
+
+	MOVE #orig
+	BREAK
+
+	MOVE #intermediate
+	BREAK
+
+	MOVE #close_to_feeder
+	BREAK
+
+	diff_z = 102
+	MOVE HERE:TRANS(0,0,diff_z,0,0,0)
+	BREAK
+
+	CALL gripper_close()
+
+	CALL movehome()
+
+.END
+
 .LOCATIONS
 #close_to_feeder  -100 -54 185 0 50 0
 #intermediate  -100 -90 180 0 90 0
@@ -234,6 +311,7 @@
 .END
 
 .REALS
+ diff_z     104.800003052
  err_code   1
  lun        31
 .END
