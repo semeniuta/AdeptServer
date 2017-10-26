@@ -68,6 +68,8 @@
 
 		CALL skillexec($input)
 
+		;WRITE (lun) "skill-done"
+
 	      VALUE 101:
 		TYPE "Connection closed"
 	    END
@@ -182,21 +184,6 @@
 	CALL typeiostat("destroying TCP client", lun)
 .END
 
-.PROGRAM move_relative(params[])
-
-	HERE now
-
-	x = params[0]
-	y = params[1]
-	z = params[2]
-	roll = params[3]
-	pitch = params[4]
-	yaw = params[5]
-
-	MOVE now:TRANS(x,y,z,roll,pitch,yaw)
-
-.END
-
 .PROGRAM movehome()
 	CALL defvars()
 	MOVE #orig
@@ -274,13 +261,38 @@
 
 .END
 
+.PROGRAM move_rel_tool(params[])
+
+	HERE now
+
+	x = params[0]
+	y = params[1]
+	z = params[2]
+	roll = params[3]
+	pitch = params[4]
+	yaw = params[5]
+
+	MOVE now:TRANS(x,y,z,roll,pitch,yaw)
+
+.END
+
+.PROGRAM move_rel_world(params[])
+
+	HERE here_pose
+	DECOMPOSE ha[] = here_pose
+	MOVE TRANS(ha[0]+params[0],ha[1]+params[1],ha[2]+params[2],ha[3]+params[3],ha[4]+params[4],ha[5]+params[5])
+
+.END
+
 .LOCATIONS
 #close_to_feeder  -100 -54 185 0 50 0
+ here_pose   0.173621923 0.984658718 0.017393475 0.98480773 -0.173648208 -3.30458283E-09
+ 3.02034221E-03 0.017129229 -0.999848664 -113.36390686 -642.919311523 224.965026855
  insp_approach  -0.053321108 0.997576058 0.044708055 0.996407151 0.050201692 0.068209276
  0.065799527 0.048184421 -0.996668756 558.356018066 -365.489013672 443.312988281
 #intermediate  -100 -90 180 0 90 0
- now         0.173607349 0.984660387 0.017450865 0.984810293 -0.173633784 2.38129942E-07
- 3.03029432E-03 0.017185749 -0.99984777 -113.364524841 -642.92578125 248.999542236
+ now         -1 -2.55287468E-05 3.70543603E-05 -2.55287268E-05 1 5.15483237E-07
+ -3.70543748E-05 5.14537021E-07 -1 429.997924805 49.996440887 710.000427246
 #orig        0 -90 180 0 90 0
  over_griphome_1  0 -1 0 -1 0 0
  0 0 -1 167.899993896 -243.300003052 600
@@ -291,29 +303,35 @@
 
 .REALS
  err_code   1
+ ha[0]      -113.36390686
+ ha[1]      -642.919311523
+ ha[2]      224.965026855
+ ha[3]      80.000007629
+ ha[4]      179.003372192
+ ha[5]      -180
  i          6
- nparams    7
- p[0]       -213.367004395
- p[1]       -642.809997559
- p[2]       224.964996338
- p[3]       80
- p[4]       179.005004883
- p[5]       -180
- pitch      179.005004883
- roll       80
- status     1
- x          -213.367004395
- y          -642.809997559
- yaw        -180
- z          224.964996338
+ nparams    0
+ p[0]       0
+ p[1]       0
+ p[2]       50
+ p[3]       0
+ p[4]       0
+ p[5]       0
+ pitch      0
+ roll       0
+ status     -565
+ x          0
+ y          0
+ yaw        0
+ z          50
 .END
 
 .DOUBLES
 .END
 
 .STRINGS
-$func       "move_to"
-$input      "move_to:-213.367,-642.810,224.965,80.000,179.005,-180.000"
+$func       "movehome"
+$input      ""
 $ip_vbox    "172.16.0.125"
 $tmp        ""
 .END
