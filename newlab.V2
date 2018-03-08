@@ -1,9 +1,20 @@
 .PROGRAM newlab()
 .END
 
-.PROGRAM playground()
+.PROGRAM movez()
+
 	ATTACH ()
-	MOVE #PPOINT(0,-90,180,0,90,0) ; #orig
+	MOVE HERE:TRANS(0,0,5,0,0,0)
+	BREAK
+
+
+.END
+
+.PROGRAM play()
+
+	CALL initialize()
+
+	MOVE #orig
 	BREAK
 
 	CALL create_array(delta_j[], -90, 60, 30, -90, 0, 0)
@@ -17,12 +28,9 @@
 
 .END
 
-.PROGRAM movez()
+.PROGRAM defvars()
 
-	ATTACH ()
-	MOVE HERE:TRANS(0,0,5,0,0,0)
-	BREAK
-
+	SET #orig = #PPOINT(0,-90,180,0,90,0)
 
 .END
 
