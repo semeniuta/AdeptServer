@@ -17,12 +17,37 @@
 	MOVE #orig
 	BREAK
 
+	SPEED 80
 	CALL create_array(delta_j[], -90, 60, 30, -90, 0, 0)
 	CALL move_rel_joints(delta_j[])
 	BREAK
 
-	MOVE HERE:TRANS(0,0,185,0,0,0)
+	;MOVE HERE:TRANS(0,0,185,0,0,0)
+
+	SPEED 100
+	TYPE SPEED(2), SPEED(1)
+	MOVE HERE:TRANS(0,0,-100,0,0,0)
 	BREAK
+
+	SPEED 50
+	TYPE SPEED(2), SPEED(1)
+	MOVE HERE:TRANS(0,0,-100,0,0,0)
+	BREAK
+
+	SPEED 25
+	TYPE SPEED(2), SPEED(1)
+	MOVE HERE:TRANS(0,0,-100,0,0,0)
+	BREAK
+
+	SPEED 5
+	TYPE SPEED(2), SPEED(1)
+	MOVE HERE:TRANS(0,0,-100,0,0,0)
+	BREAK
+
+	SPEED 5
+	MOVE #orig
+	BREAK
+
 
 
 
@@ -32,6 +57,11 @@
 
 	SET #orig = #PPOINT(0,-90,180,0,90,0)
 
+.END
+
+.PROGRAM pspeed()
+
+	TYPE SPEED(2)
 .END
 
 
