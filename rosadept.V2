@@ -353,4 +353,35 @@
 
 .END
 
+.PROGRAM get_delimiter($res)
+
+	; Returns \r\n
+
+	$res = $CHR(13)+$CHR(10)
+
+.END
+
+.PROGRAM split_string($s, $delim, $tokens[], n_tokens)
+
+	n_tokens = 0
+
+	i = 0
+
+	DO
+
+	    $token = $DECODE($s,$delim,0)
+	    $tokens[i] = $token
+
+	    $delim_token = $DECODE($s,$delim,1)
+
+	    n_tokens = n_tokens+1
+	    i = i+1
+
+
+	UNTIL $s == ""
+
+
+
+.END
+
 
