@@ -391,7 +391,7 @@
 	AUTO handle, lun, repeat_loop
 	AUTO $cmd_delimiter
 	AUTO $input
-	AUTO n_cmd, $cur_cmd
+	AUTO n_cmd, $cur_cmd, $cmd_id, $cmd_name, $cmd_params
 
 	CALL get_delimiter($cmd_delimiter)
 
@@ -426,9 +426,23 @@
 		    TYPE $cur_cmd
 
 		    CALL split_string($cur_cmd, ":", $cmd_parts[], n_cmd_parts)
-		    TYPE "ID=", $cmd_parts[0]
 
-		    WRITE (lun, handle) $cmd_parts[0], ":done"
+		    $cmd_id = $cmd_parts[0]
+		    TYPE "ID=", $cmd_id
+
+		    IF n_cmd_parts > 1 THEN
+
+			$cmd_name = $cmd_parts[1]
+			TYPE "Name=", $cmd_name
+
+			IF n_cmd_parts > 2 THEN
+			    $cmd_params = $cmd_parts[2]
+			    TYPE "Params=", $cmd_params
+			END
+
+		    END
+
+		    WRITE (lun, handle) $cmd_id, ":done"
 		END
 
 		;IF $input == "stop_server" THEN
