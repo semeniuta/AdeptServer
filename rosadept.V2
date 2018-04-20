@@ -363,6 +363,7 @@
 
 .PROGRAM split_string($s, $delim, $tokens[], n_tokens)
 
+
 	n_tokens = 0
 
 	i = 0
@@ -380,6 +381,78 @@
 
 	UNTIL $s == ""
 
+
+
+.END
+
+.PROGRAM server()
+
+
+	AUTO handle, lun, repeat_loop
+	AUTO $cmd_delimiter
+	AUTO $input
+	AUTO n_tokens, $current_token
+
+	CALL get_delimiter($cmd_delimiter)
+
+	ATTACH (lun, 4) "TCP"
+	CALL typeiostat("establishing TCP server LUN", lun)
+
+	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 1024"
+	CALL typeiostat("creating server socket", lun)
+
+	repeat_loop = TRUE
+	WHILE repeat_loop DO
+
+	    ;WAIT
+	    READ (lun, handle, 0) $input
+	    status = IOSTAT(lun)
+	    CASE status OF
+
+	      VALUE 100:
+
+		TYPE "Connection established"
+
+	      VALUE 1:
+
+		TYPE "Received message ", $input
+
+		CALL split_string($input, $cmd_delimiter, $tokens[], n_tokens)
+
+		TYPE "Number of tokens: ", n_tokens
+
+		FOR i = 0 TO n_tokens-1
+
+		    $current_token = $tokens[i]
+		    TYPE $current_token
+
+		    ;CALL split_string($current_token, ":", $cmd_parts[], n_cmd_parts)
+
+		    ;TYPE "ID=", $cmd_parts[0]
+
+		    TYPE n_tokens
+		    WRITE (lun, handle) "done:", $current_token	; temp
+		END
+
+
+
+		IF $input == "stop_server" THEN
+		    repeat_loop = FALSE
+		    EXIT
+		END
+
+		;CALL skillexec($input)
+
+		;WRITE (lun, handle) "done:", $input
+
+	      VALUE 101:
+
+		TYPE "Connection closed"
+
+	    END
+
+
+	END
 
 
 .END

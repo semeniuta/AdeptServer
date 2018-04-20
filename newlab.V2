@@ -88,10 +88,21 @@
 
 	CALL split_string($s, $delim, $tokens[], n_tokens)
 
+	TYPE "Number of tokens: ", n_tokens
+
 	FOR i = 0 TO n_tokens-1
 	    TYPE $tokens[i]
 	END
 
+
+.END
+
+.PROGRAM softsignals()
+
+	AUTO signal_ready
+	signal_ready = 2007
+
+	SIGNAL -signal_ready
 
 .END
 
