@@ -391,7 +391,7 @@
 	AUTO handle, lun, repeat_loop
 	AUTO $cmd_delimiter
 	AUTO $input
-	AUTO n_tokens, $current_token
+	AUTO n_cmd, $cur_cmd
 
 	CALL get_delimiter($cmd_delimiter)
 
@@ -404,7 +404,6 @@
 	repeat_loop = TRUE
 	WHILE repeat_loop DO
 
-	    ;WAIT
 	    READ (lun, handle, 0) $input
 	    status = IOSTAT(lun)
 	    CASE status OF
@@ -417,21 +416,21 @@
 
 		TYPE "Received message ", $input
 
-		CALL split_string($input, $cmd_delimiter, $tokens[], n_tokens)
+		CALL split_string($input, $cmd_delimiter, $tokens[], n_cmd)
 
-		TYPE "Number of tokens: ", n_tokens
+		TYPE "Number of tokens: ", n_cmd
 
-		FOR i = 0 TO n_tokens-1
+		FOR i = 0 TO n_cmd-1
 
-		    $current_token = $tokens[i]
-		    TYPE $current_token
+		    $cur_cmd = $tokens[i]
+		    TYPE $cur_cmd
 
-		    ;CALL split_string($current_token, ":", $cmd_parts[], n_cmd_parts)
+		    ;CALL split_string($cur_cmd, ":", $cmd_parts[], n_cmd_parts)
 
 		    ;TYPE "ID=", $cmd_parts[0]
 
-		    TYPE n_tokens
-		    WRITE (lun, handle) "done:", $current_token	; temp
+		    TYPE n_cmd
+		    WRITE (lun, handle) "done:", $cur_cmd ; temp
 		END
 
 
