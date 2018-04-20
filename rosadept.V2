@@ -425,24 +425,18 @@
 		    $cur_cmd = $tokens[i]
 		    TYPE $cur_cmd
 
-		    ;CALL split_string($cur_cmd, ":", $cmd_parts[], n_cmd_parts)
+		    CALL split_string($cur_cmd, ":", $cmd_parts[], n_cmd_parts)
+		    TYPE "ID=", $cmd_parts[0]
 
-		    ;TYPE "ID=", $cmd_parts[0]
-
-		    TYPE n_cmd
-		    WRITE (lun, handle) "done:", $cur_cmd ; temp
+		    WRITE (lun, handle) $cmd_parts[0], ":done"
 		END
 
-
-
-		IF $input == "stop_server" THEN
-		    repeat_loop = FALSE
-		    EXIT
-		END
+		;IF $input == "stop_server" THEN
+		;    repeat_loop = FALSE
+		;    EXIT
+		;END
 
 		;CALL skillexec($input)
-
-		;WRITE (lun, handle) "done:", $input
 
 	      VALUE 101:
 
