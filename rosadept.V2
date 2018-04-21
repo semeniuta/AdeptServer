@@ -391,7 +391,8 @@
 	AUTO handle, lun, repeat_loop
 	AUTO $cmd_delimiter
 	AUTO $input
-	AUTO n_cmd, $cur_cmd, $cmd_id, $cmd_name, $cmd_params
+	AUTO n_cmd, $cur_cmd, $cmd_id, $cmd_name, $cmd_params, no_params
+	AUTO timestamp
 
 	CALL get_delimiter($cmd_delimiter)
 
@@ -442,15 +443,24 @@
 			$cmd_name = $cmd_parts[1]
 			TYPE "Name=", $cmd_name
 
+			no_params = TRUE
 			IF n_cmd_parts > 2 THEN
 			    $cmd_params = $cmd_parts[2]
 			    TYPE "Params=", $cmd_params
+			    no_params = FALSE
+
+			ELSE
+
+			    TYPE "No params"
+
 			END
 
 		    END
 
-		    WRITE (lun, handle) $cmd_id, ":done"
-		    TYPE "Wrote back about", $cmd_id
+		    timestamp = TIMER(-3)
+
+		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(timestamp)
+		    TYPE "Wrote back about ", $cmd_id
 		END
 
 		;IF $input == "stop_server" THEN
@@ -468,6 +478,61 @@
 
 
 	END
+
+
+.END
+
+.PROGRAM define_signals()
+
+	GLOBAL sig_new_cmd, sig_cmd_done
+
+	sig_new_cmd = 2225
+	SIGNAL -sig_new_cmd
+
+	sig_cmd_done = 2226
+	SIGNAL -sig_cmd_done
+
+
+.END
+
+.PROGRAM skillexec_new($cmd)
+
+
+	CALL split_string($cmd+"", ":", $cmd_parts[], n_cmd_parts)
+
+	$cmd_id = $cmd_parts[0]
+	TYPE "ID=", $cmd_id
+
+	IF n_cmd_parts > 1 THEN
+
+	    $cmd_name = $cmd_parts[1]
+	    TYPE "Name=", $cmd_name
+
+	    no_params = TRUE
+	    IF n_cmd_parts > 2 THEN
+		$cmd_params = $cmd_parts[2]
+		TYPE "Params=", $cmd_params
+		no_params = FALSE
+	    END
+
+	END
+
+
+
+.END
+
+.PROGRAM decodeparams($p_string, params[], nparams)
+
+	i = 0
+	nparams = 0
+	DO
+	    $tmp = $DECODE($p_string,",",0)
+	    params[i] = VAL($tmp)
+	    nparams = nparams+1
+	    $tmp = $DECODE($msg,",",1)
+	    i = i+1
+
+	UNTIL $msg == ""
 
 
 .END

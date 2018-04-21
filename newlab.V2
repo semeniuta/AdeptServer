@@ -106,4 +106,14 @@
 
 .END
 
+.PROGRAM playwithtime()
+
+	AUTO ts
+	ts = TIMER(3)
+
+	TYPE "done:", $ENCODE(ts)
+
+
+.END
+
 
