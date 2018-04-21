@@ -416,16 +416,23 @@
 
 		TYPE "Received message ", $input
 
-		CALL split_string($input, $cmd_delimiter, $tokens[], n_cmd)
+		CALL split_string($input+"", $cmd_delimiter, $commands[], n_cmd)
 
-		TYPE "Number of tokens: ", n_cmd
+		TYPE "Number of commands: ", n_cmd
+
+		FOR i = 0 TO n_cmd-1
+		    TYPE "Idx=", i, " ", $commands[i]
+		END
+
 
 		FOR i = 0 TO n_cmd-1
 
-		    $cur_cmd = $tokens[i]
+		    TYPE "Handling next command"
+
+		    $cur_cmd = $commands[i]
 		    TYPE $cur_cmd
 
-		    CALL split_string($cur_cmd, ":", $cmd_parts[], n_cmd_parts)
+		    CALL split_string($cur_cmd+"", ":", $cmd_parts[], n_cmd_parts)
 
 		    $cmd_id = $cmd_parts[0]
 		    TYPE "ID=", $cmd_id
@@ -443,6 +450,7 @@
 		    END
 
 		    WRITE (lun, handle) $cmd_id, ":done"
+		    TYPE "Wrote back about", $cmd_id
 		END
 
 		;IF $input == "stop_server" THEN
