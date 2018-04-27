@@ -433,29 +433,7 @@
 		    $cur_cmd = $commands[i]
 		    TYPE $cur_cmd
 
-		    CALL split_string($cur_cmd+"", ":", $cmd_parts[], n_cmd_parts)
-
-		    $cmd_id = $cmd_parts[0]
-		    TYPE "ID=", $cmd_id
-
-		    IF n_cmd_parts > 1 THEN
-
-			$cmd_name = $cmd_parts[1]
-			TYPE "Name=", $cmd_name
-
-			no_params = TRUE
-			IF n_cmd_parts > 2 THEN
-			    $cmd_params = $cmd_parts[2]
-			    TYPE "Params=", $cmd_params
-			    no_params = FALSE
-
-			ELSE
-
-			    TYPE "No params"
-
-			END
-
-		    END
+		    CALL skillexec_new($cur_cmd, 0)
 
 		    timestamp = TIMER(-3)
 
@@ -495,8 +473,7 @@
 
 .END
 
-.PROGRAM skillexec_new($cmd)
-
+.PROGRAM skillexec_new($cmd, real_op)
 
 	CALL split_string($cmd+"", ":", $cmd_parts[], n_cmd_parts)
 
@@ -505,19 +482,31 @@
 
 	IF n_cmd_parts > 1 THEN
 
-	    $cmd_name = $cmd_parts[1]
-	    TYPE "Name=", $cmd_name
+	    $skill_name = $cmd_parts[1]
+	    TYPE "Skill=", $skill_name
 
 	    no_params = TRUE
 	    IF n_cmd_parts > 2 THEN
-		$cmd_params = $cmd_parts[2]
-		TYPE "Params=", $cmd_params
+		$skill_params = $skill_params[2]
+		TYPE "Params=", $skill_params
 		no_params = FALSE
+		CALL decodenumseq($cmd_params+"", params[], n_params)
 	    END
 
 	END
 
 
+	IF real_op THEN
+
+	    TYPE "Executing the skill for real!"
+
+	    IF no_params THEN
+		CALLS $skill_name()
+	    ELSE
+		CALLS $skill_name(params[])
+	    END
+
+	END
 
 .END
 
@@ -529,6 +518,22 @@
 	    $tmp = $DECODE($p_string,",",0)
 	    params[i] = VAL($tmp)
 	    nparams = nparams+1
+	    $tmp = $DECODE($msg,",",1)
+	    i = i+1
+
+	UNTIL $msg == ""
+
+
+.END
+
+.PROGRAM decodenumseq($msg, numbers[], n)
+
+	i = 0
+	n = 1
+	DO
+	    $tmp = $DECODE($msg,",",0)
+	    numbers[i] = VAL($tmp)
+	    n = n+1
 	    $tmp = $DECODE($msg,",",1)
 	    i = i+1
 
