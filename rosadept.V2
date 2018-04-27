@@ -422,18 +422,37 @@
 		TYPE "Number of commands: ", n_cmd
 
 		FOR i = 0 TO n_cmd-1
-		    TYPE "Idx=", i, " ", $commands[i]
-		END
-
-
-		FOR i = 0 TO n_cmd-1
-
-		    TYPE "Handling next command"
 
 		    $cur_cmd = $commands[i]
-		    TYPE $cur_cmd
+		    TYPE "Handling command", $cur_cmd
 
-		    CALL skillexec_new($cur_cmd, 0)
+		    CALL split_string($cur_cmd+"", ":", $cmd_parts[], n_cmd_parts)
+
+		    $cmd_id = $cmd_parts[0]
+		    TYPE "ID=", $cmd_id
+
+		    ; START
+		    IF n_cmd_parts > 1 THEN
+
+			$cmd_name = $cmd_parts[1]
+			TYPE "Name=", $cmd_name
+
+			no_params = TRUE
+			IF n_cmd_parts > 2 THEN
+			    $cmd_params = $cmd_parts[2]
+			    TYPE "Params=", $cmd_params
+			    no_params = FALSE
+
+			ELSE
+
+			    TYPE "No params"
+
+			END
+
+		    END
+		    ; FINISH
+
+		    ;CALL skillexec_new($cmd_parts[], n_cmd_parts, 0)
 
 		    timestamp = TIMER(-3)
 
@@ -473,12 +492,7 @@
 
 .END
 
-.PROGRAM skillexec_new($cmd, real_op)
-
-	CALL split_string($cmd+"", ":", $cmd_parts[], n_cmd_parts)
-
-	$cmd_id = $cmd_parts[0]
-	TYPE "ID=", $cmd_id
+.PROGRAM skillexec_new($cmd_parts[], n_cmd_parts, real_op)
 
 	IF n_cmd_parts > 1 THEN
 
@@ -490,11 +504,12 @@
 		$skill_params = $skill_params[2]
 		TYPE "Params=", $skill_params
 		no_params = FALSE
-		CALL decodenumseq($cmd_params+"", params[], n_params)
+		;CALL decodenumseq($cmd_params+"", params[], n_params)
 	    END
 
 	END
 
+	TYPE "Done parsing"
 
 	IF real_op THEN
 
@@ -507,6 +522,8 @@
 	    END
 
 	END
+
+	TYPE "Done executing"
 
 .END
 
