@@ -432,27 +432,9 @@
 		    TYPE "ID=", $cmd_id
 
 		    ; START
-		    IF n_cmd_parts > 1 THEN
-
-			$cmd_name = $cmd_parts[1]
-			TYPE "Name=", $cmd_name
-
-			no_params = TRUE
-			IF n_cmd_parts > 2 THEN
-			    $cmd_params = $cmd_parts[2]
-			    TYPE "Params=", $cmd_params
-			    no_params = FALSE
-
-			ELSE
-
-			    TYPE "No params"
-
-			END
-
-		    END
 		    ; FINISH
 
-		    ;CALL skillexec_new($cmd_parts[], n_cmd_parts, 0)
+		    CALL skillexec_new($cmd_parts[], n_cmd_parts, 0)
 
 		    timestamp = TIMER(-3)
 
@@ -501,7 +483,7 @@
 
 	    no_params = TRUE
 	    IF n_cmd_parts > 2 THEN
-		$skill_params = $skill_params[2]
+		$skill_params = $cmd_parts[2]
 		TYPE "Params=", $skill_params
 		no_params = FALSE
 		;CALL decodenumseq($cmd_params+"", params[], n_params)
