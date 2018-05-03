@@ -391,7 +391,7 @@
 	AUTO handle, lun, repeat_loop
 	AUTO $cmd_delimiter
 	AUTO $input
-	AUTO n_cmd, $cur_cmd, $cmd_id, $cmd_name, $cmd_params, no_params
+	AUTO n_cmd, $cur_cmd, $cmd_id
 	AUTO timestamp
 
 	CALL get_delimiter($cmd_delimiter)
@@ -476,16 +476,18 @@
 
 .PROGRAM skillexec_new($cmd_parts[], n_cmd_parts, real_op)
 
+	AUTO $skill_name, $skill_params, with_params
+
 	IF n_cmd_parts > 1 THEN
 
 	    $skill_name = $cmd_parts[1]
 	    TYPE "Skill=", $skill_name
 
-	    no_params = TRUE
+	    with_params = FALSE
 	    IF n_cmd_parts > 2 THEN
 		$skill_params = $cmd_parts[2]
 		TYPE "Params=", $skill_params
-		no_params = FALSE
+		with_params = TRUE
 		;CALL decodenumseq($cmd_params+"", params[], n_params)
 	    END
 
