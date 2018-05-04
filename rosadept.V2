@@ -422,10 +422,13 @@
 		CALL split_string($input+"", $cmd_delimiter, $commands[], n_cmd)
 
 		TYPE "Number of commands: ", n_cmd
+		FOR cmd_idx = 0 TO n_cmd-1
+		    TYPE "Command", cmd_idx+1, ": ", $commands[cmd_idx]
+		END
 
-		FOR i = 0 TO n_cmd-1
+		FOR cmd_idx = 0 TO n_cmd-1
 
-		    $cur_cmd = $commands[i]
+		    $cur_cmd = $commands[cmd_idx]
 		    TYPE "Handling command", $cur_cmd
 
 		    CALL split_string($cur_cmd+"", ":", $cmd_parts[], n_cmd_parts)
@@ -440,6 +443,8 @@
 		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(timestamp)
 		    TYPE "Wrote back about ", $cmd_id
 		END
+
+		TYPE "Done with all(", n_cmd, ") commands"
 
 		;IF $input == "stop_server" THEN
 		;    repeat_loop = FALSE
