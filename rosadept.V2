@@ -551,4 +551,11 @@
 
 .END
 
+.PROGRAM set_speed(params[])
+
+	speed_factor = params[0]
+	SPEED speed_factor
+
+.END
+
 
