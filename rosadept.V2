@@ -440,7 +440,7 @@
 
 		    timestamp = TIMER(-3)
 
-		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(timestamp)
+		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.2,timestamp)
 		    TYPE "Wrote back about ", $cmd_id
 		END
 
