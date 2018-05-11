@@ -441,7 +441,7 @@
 
 		    t_done = TIMER(-3)
 
-		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.2,t_recv,":",/F0.2,t_done)
+		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.2,t_recv,",",/F0.2,t_done)
 		    TYPE "Wrote back about ", $cmd_id
 		END
 
