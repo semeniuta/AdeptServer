@@ -1,4 +1,5 @@
 .PROGRAM adeptserver()
+; Specifies unique name for the module
 .END
 
 .PROGRAM disable_air()
@@ -197,6 +198,9 @@
 .END
 
 .PROGRAM break()
+; Wrapper aroud BREAK instruction
+; to be invoked with CALLS 
+
 	BREAK
 .END
 
@@ -270,6 +274,7 @@
 .END
 
 .PROGRAM create_array(arr[], x1, x2, x3, x4, x5, x6)
+; Creates array out of six real values
 
 	arr[5] = x6
 	arr[4] = x5
@@ -521,23 +526,11 @@
 
 .END
 
-.PROGRAM decodeparams($p_string, params[], nparams)
-
-	i = 0
-	nparams = 0
-	DO
-	    $tmp = $DECODE($p_string,",",0)
-	    params[i] = VAL($tmp)
-	    nparams = nparams+1
-	    $tmp = $DECODE($msg,",",1)
-	    i = i+1
-
-	UNTIL $msg == ""
-
-
-.END
-
 .PROGRAM decodenumseq($msg, numbers[], n)
+
+; Decode a string containing sequence of 
+; real numbers separated by commas.
+; Returns array of numbers and their count. 
 
 	i = 0
 	DO
