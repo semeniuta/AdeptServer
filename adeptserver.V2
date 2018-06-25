@@ -1,0 +1,562 @@
+.PROGRAM adeptserver()
+.END
+
+.PROGRAM disable_air()
+
+	IF SIG(8) THEN
+	    SIGNAL -8
+	END
+
+.END
+
+.PROGRAM enable_air()
+
+	IF SIG(8) == FALSE THEN
+	    SIGNAL 8
+	END
+.END
+
+.PROGRAM decodeskill($msg, $func, params[], nparams)
+
+	$func = $DECODE($msg,":",0)
+	$tmp = $DECODE($msg,":",1)
+
+	IF $tmp == "" THEN
+	    nparams = 0
+	ELSE
+
+	    i = 0
+	    nparams = 1
+	    DO
+		$tmp = $DECODE($msg,",",0)
+		params[i] = VAL($tmp)
+		nparams = nparams+1
+		$tmp = $DECODE($msg,",",1)
+		i = i+1
+
+	    UNTIL $msg == ""
+
+	END
+
+
+.END
+
+.PROGRAM serverloop()
+
+	AUTO do_wait, no_wait, handle, lun, repeat_loop
+
+	do_wait = 0
+	no_wait = 1
+
+	ATTACH (lun, 4) "TCP"
+	CALL typeiostat("establishing TCP server LUN", lun)
+
+	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 1024"
+	CALL typeiostat("creating server socket", lun)
+
+	repeat_loop = TRUE
+	WHILE repeat_loop DO
+
+	    WAIT
+	    READ (lun, handle, do_wait) $input
+	    status = IOSTAT(lun)
+	    CASE status OF
+	      VALUE 100:
+		TYPE "Connection established"
+	      VALUE 1:
+		TYPE "Received message ", $input
+
+		IF $input == "stop_server" THEN
+		    repeat_loop = FALSE
+		    EXIT
+		END
+
+		CALL skillexec($input)
+
+		WRITE (lun, handle) "done(", $input, ")"
+
+	      VALUE 101:
+		TYPE "Connection closed"
+	    END
+
+	END
+
+	FCLOSE (lun)
+	DETACH (lun)
+	CALL typeiostat("closing", lun)
+
+
+.END
+
+.PROGRAM gripper_close()
+
+	CALL enable_air()
+	;IF SIG(-99) AND SIG(100) THEN
+	;SIGNAL 99, -100
+	;END
+
+	SIGNAL 99, -100
+
+.END
+
+.PROGRAM gripper_open()
+
+	CALL enable_air()
+
+	;TYPE SIG(99), SIG(-100)
+
+	;IF SIG(99) AND SIG(-100) THEN
+	;SIGNAL -99, 100
+	;END
+
+	SIGNAL -99, 100
+
+.END
+
+.PROGRAM writecsvline(lun, arr[])
+
+	n = LAST(arr[])
+	FOR i = 0 TO n-1
+	    WRITE (lun) arr[i], /S
+	    WRITE (lun) ",", /S
+	END
+	WRITE (lun) arr[n]
+
+	TYPE "Done writing"
+.END
+
+.PROGRAM typeiostat($op_string, lun)
+
+	err_code = IOSTAT(lun)
+	TYPE "After ", $op_string, ":", err_code
+	IF err_code < 0 THEN
+	    TYPE $ERROR(err_code)
+	END
+
+.END
+
+.PROGRAM tcpsend($ip, port, $msg)
+	AUTO lun
+
+	ATTACH (lun, 4) "TCP"
+	FOPEN (lun, 0) $ip, " /REMOTE_PORT", port, " /BUFFER_SIZE 1024"
+
+	WRITE (lun) $msg
+
+	FCLOSE (lun)
+	DETACH (lun)
+.END
+
+.PROGRAM tcpcreateclient($ip, port, lun)
+	ATTACH (lun, 4) "TCP"
+	;CALL typeiostat("establishing TCP client LUN", lun)
+
+	IF IOSTAT(lun) < 0 THEN
+	    CALL tcpdestrclient(lun)
+	END
+
+	FOPEN (lun, 0) $ip, " /REMOTE_PORT", port, " /BUFFER_SIZE 1024"
+	;CALL typeiostat("creating client socket", lun)
+
+	IF IOSTAT(lun) < 0 THEN
+	    CALL tcpdestrclient(lun)
+	END
+.END
+
+.PROGRAM tcpdestrclient(lun)
+	FCLOSE (lun)
+	DETACH (lun)
+	CALL typeiostat("destroying TCP client", lun)
+.END
+
+.PROGRAM movehome()
+
+	MOVE #orig
+.END
+
+.PROGRAM skillexec($skill)
+
+	CALL decodeskill($skill+"", $func, p[], nparams)
+
+	IF nparams == 0 THEN
+	    CALLS $func()
+	ELSE
+	    CALLS $func(p[])
+	END
+
+.END
+
+.PROGRAM moveinterm()
+	CALL defvars()
+	MOVE #intermediate
+.END
+
+.PROGRAM move2feeder()
+	CALL defvars()
+	MOVE #close_to_feeder
+.END
+
+.PROGRAM break()
+	BREAK
+.END
+
+.PROGRAM put_tool()
+
+	AUTO REAL lastspeed
+	AUTO REAL id
+
+	id = 26
+
+	ATTACH ()
+	lastspeed = SPEED(2)
+	SPEED 50 ALWAYS
+	CALL r._puttool(1, id, index)
+	SPEED lastspeed ALWAYS
+
+.END
+
+.PROGRAM get_tool(id)
+
+	ATTACH ()
+	CALL r1.gettool(id)
+.END
+
+.PROGRAM get_calibtool()
+
+	CALL get_tool(11)
+
+.END
+
+.PROGRAM get_tool26()
+
+	CALL get_tool(26)
+
+.END
+
+.PROGRAM move_to(pose_params[])
+
+	x = pose_params[0]
+	y = pose_params[1]
+	z = pose_params[2]
+	roll = pose_params[3]
+	pitch = pose_params[4]
+	yaw = pose_params[5]
+
+	MOVE TRANS(x,y,z,roll,pitch,yaw)
+
+.END
+
+.PROGRAM move_rel_tool(params[])
+
+	HERE now
+
+	x = params[0]
+	y = params[1]
+	z = params[2]
+	roll = params[3]
+	pitch = params[4]
+	yaw = params[5]
+
+	MOVE now:TRANS(x,y,z,roll,pitch,yaw)
+
+.END
+
+.PROGRAM move_rel_world(params[])
+
+	HERE here_pose
+	DECOMPOSE ha[] = here_pose
+	MOVE TRANS(ha[0]+params[0],ha[1]+params[1],ha[2]+params[2],ha[3]+params[3],ha[4]+params[4],ha[5]+params[5])
+
+.END
+
+.PROGRAM create_array(arr[], x1, x2, x3, x4, x5, x6)
+
+	arr[5] = x6
+	arr[4] = x5
+	arr[3] = x4
+	arr[2] = x3
+	arr[1] = x2
+	arr[0] = x1
+
+.END
+
+.PROGRAM move_rel_joints(params[])
+
+
+	JHERE now1, now2, now3, now4, now5, now6
+
+	j1 = params[0]
+	j2 = params[1]
+	j3 = params[2]
+	j4 = params[3]
+	j5 = params[4]
+	j6 = params[5]
+
+	JMOVE now1+j1, now2+j2, now3+j3, now4+j4, now5+j5, now6+j6
+
+
+.END
+
+.PROGRAM echoloop()
+
+	AUTO do_wait, no_wait, handle, lun, repeat_loop
+
+	do_wait = 0
+	no_wait = 1
+
+	ATTACH (lun, 4) "TCP"
+	CALL typeiostat("establishing TCP server LUN", lun)
+
+	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 1024"
+	CALL typeiostat("creating server socket", lun)
+
+	repeat_loop = TRUE
+	WHILE repeat_loop DO
+
+	    WAIT
+	    READ (lun, handle, do_wait) $input
+	    status = IOSTAT(lun)
+
+	    CASE status OF
+	      VALUE 100:
+		TYPE "Connection established"
+	      VALUE 1:
+
+		TYPE "Read message ", $input
+
+		IF $input == "stop_server" THEN
+		    repeat_loop = FALSE
+		    EXIT
+		END
+
+		WRITE (lun, handle) "done(", $input, ")"
+
+	      VALUE 101:
+		TYPE "Connection closed"
+	    END
+
+	END
+
+	FCLOSE (lun)
+	DETACH (lun)
+	CALL typeiostat("closing", lun)
+
+
+.END
+
+.PROGRAM initialize()
+
+	CALL defvars()
+
+	ATTACH ()
+
+
+.END
+
+.PROGRAM get_delimiter($res)
+
+	; Returns \r\n
+
+	$res = $CHR(13)+$CHR(10)
+
+.END
+
+.PROGRAM split_string($s, $delim, $tokens[], n_tokens)
+
+
+	n_tokens = 0
+
+	i = 0
+
+	DO
+
+	    $token = $DECODE($s,$delim,0)
+	    $tokens[i] = $token
+
+	    $delim_token = $DECODE($s,$delim,1)
+
+	    n_tokens = n_tokens+1
+	    i = i+1
+
+
+	UNTIL $s == ""
+
+
+
+.END
+
+.PROGRAM server()
+
+	AUTO handle, lun, repeat_loop
+	AUTO $cmd_delimiter
+	AUTO $input
+	AUTO n_cmd, $cur_cmd, $cmd_id
+	AUTO t_recv, t_done
+
+	CALL initialize()
+
+	CALL get_delimiter($cmd_delimiter)
+
+	ATTACH (lun, 4) "TCP"
+	CALL typeiostat("establishing TCP server LUN", lun)
+
+	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 2048"
+	CALL typeiostat("creating server socket", lun)
+
+	repeat_loop = TRUE
+	WHILE repeat_loop DO
+
+	    ;WAIT
+	    READ (lun, handle, 0) $input
+	    status = IOSTAT(lun)
+	    CASE status OF
+
+	      VALUE 100:
+
+		TYPE "Connection established"
+
+	      VALUE 1:
+
+		t_recv = TIMER(3)
+		TYPE "Received message ", $input
+
+		CALL split_string($input+"", $cmd_delimiter, $commands[], n_cmd)
+
+		TYPE "Number of commands: ", n_cmd
+		FOR cmd_idx = 0 TO n_cmd-1
+		    TYPE "Command", cmd_idx+1, ": ", $commands[cmd_idx]
+		END
+
+		FOR cmd_idx = 0 TO n_cmd-1
+
+		    $cur_cmd = $commands[cmd_idx]
+		    TYPE "Handling command", $cur_cmd
+
+		    CALL split_string($cur_cmd+"", ":", $cmd_parts[], n_cmd_parts)
+
+		    $cmd_id = $cmd_parts[0]
+		    TYPE "ID=", $cmd_id
+
+		    CALL skillexec_new($cmd_parts[], n_cmd_parts, 1)
+
+		    t_done = TIMER(-3)
+
+		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.2,t_recv,",",/F0.2,t_done)
+		    TYPE "Wrote back about ", $cmd_id
+		END
+
+		TYPE "Done with all(", n_cmd, ") commands"
+
+		;IF $input == "stop_server" THEN
+		;    repeat_loop = FALSE
+		;    EXIT
+		;END
+
+	      VALUE 101:
+
+		TYPE "Connection closed"
+
+	    END
+
+
+	END
+
+
+.END
+
+.PROGRAM define_signals()
+
+	GLOBAL sig_new_cmd, sig_cmd_done
+
+	sig_new_cmd = 2225
+	SIGNAL -sig_new_cmd
+
+	sig_cmd_done = 2226
+	SIGNAL -sig_cmd_done
+
+
+.END
+
+.PROGRAM skillexec_new($cmd_parts[], n_cmd_parts, real_op)
+
+	AUTO $skill_name, $skill_params, with_params
+
+	IF n_cmd_parts > 1 THEN
+
+	    $skill_name = $cmd_parts[1]
+	    TYPE "Skill=", $skill_name
+
+	    with_params = FALSE
+	    IF n_cmd_parts > 2 THEN
+		$skill_params = $cmd_parts[2]
+		TYPE "Params=", $skill_params
+		with_params = TRUE
+	    END
+
+	END
+
+	IF with_params THEN
+	    CALL decodenumseq($skill_params+"", params[], n_params)
+	    TYPE "Number of parameters:", n_params
+	    FOR i = 0 TO n_params-1
+		TYPE "Parameter #", i, params[i]
+	    END
+	END
+
+	TYPE "Done parsing"
+
+	IF real_op THEN
+
+	    TYPE "Executing the skill for real!"
+
+	    IF with_params THEN
+		CALLS $skill_name(params[])
+	    ELSE
+		CALLS $skill_name()
+	    END
+
+	END
+
+	TYPE "Done executing"
+
+.END
+
+.PROGRAM decodeparams($p_string, params[], nparams)
+
+	i = 0
+	nparams = 0
+	DO
+	    $tmp = $DECODE($p_string,",",0)
+	    params[i] = VAL($tmp)
+	    nparams = nparams+1
+	    $tmp = $DECODE($msg,",",1)
+	    i = i+1
+
+	UNTIL $msg == ""
+
+
+.END
+
+.PROGRAM decodenumseq($msg, numbers[], n)
+
+	i = 0
+	DO
+	    $tmp = $DECODE($msg,",",0)
+	    numbers[i] = VAL($tmp)
+	    $tmp = $DECODE($msg,",",1)
+	    i = i+1
+
+	UNTIL $msg == ""
+
+	n = i
+
+.END
+
+.PROGRAM set_speed(params[])
+
+	speed_factor = params[0]
+	SPEED speed_factor
+
+.END
+
+
