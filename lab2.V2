@@ -139,4 +139,23 @@
 
 .END
 
+.PROGRAM weird($myweirdvar, weird_out)
+
+	TYPE "Input:", $myweirdvar
+	weird_out = 3.14
+
+.END
+
+.PROGRAM weird_main()
+
+	AUTO $myweirdvar
+	$myweirdvar = "Weird"
+
+	CALL weird("NTUU KPI rocks!", weird_out_val)
+
+	TYPE $myweirdvar, weird_out_val
+	;TYPE weird_out
+
+.END
+
 
