@@ -17,78 +17,6 @@
 	END
 .END
 
-.PROGRAM decodeskill($msg, $func, params[], nparams)
-
-	$func = $DECODE($msg,":",0)
-	$tmp = $DECODE($msg,":",1)
-
-	IF $tmp == "" THEN
-	    nparams = 0
-	ELSE
-
-	    i = 0
-	    nparams = 1
-	    DO
-		$tmp = $DECODE($msg,",",0)
-		params[i] = VAL($tmp)
-		nparams = nparams+1
-		$tmp = $DECODE($msg,",",1)
-		i = i+1
-
-	    UNTIL $msg == ""
-
-	END
-
-
-.END
-
-.PROGRAM serverloop()
-
-	AUTO do_wait, no_wait, handle, lun, repeat_loop
-
-	do_wait = 0
-	no_wait = 1
-
-	ATTACH (lun, 4) "TCP"
-	CALL typeiostat("establishing TCP server LUN", lun)
-
-	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 1024"
-	CALL typeiostat("creating server socket", lun)
-
-	repeat_loop = TRUE
-	WHILE repeat_loop DO
-
-	    WAIT
-	    READ (lun, handle, do_wait) $input
-	    status = IOSTAT(lun)
-	    CASE status OF
-	      VALUE 100:
-		TYPE "Connection established"
-	      VALUE 1:
-		TYPE "Received message ", $input
-
-		IF $input == "stop_server" THEN
-		    repeat_loop = FALSE
-		    EXIT
-		END
-
-		CALL skillexec($input)
-
-		WRITE (lun, handle) "done(", $input, ")"
-
-	      VALUE 101:
-		TYPE "Connection closed"
-	    END
-
-	END
-
-	FCLOSE (lun)
-	DETACH (lun)
-	CALL typeiostat("closing", lun)
-
-
-.END
-
 .PROGRAM gripper_close()
 
 	CALL enable_air()
@@ -173,18 +101,6 @@
 .PROGRAM movehome()
 
 	MOVE #orig
-.END
-
-.PROGRAM skillexec($skill)
-
-	CALL decodeskill($skill+"", $func, p[], nparams)
-
-	IF nparams == 0 THEN
-	    CALLS $func()
-	ELSE
-	    CALLS $func(p[])
-	END
-
 .END
 
 .PROGRAM moveinterm()
