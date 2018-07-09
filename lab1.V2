@@ -13,6 +13,21 @@
 
 .END
 
+.PROGRAM put_tool()
+
+        AUTO REAL lastspeed
+        AUTO REAL id
+
+        id = 26
+
+        ATTACH ()
+        lastspeed = SPEED(2)
+        SPEED 50 ALWAYS
+        CALL r._puttool(1, id, index)
+        SPEED lastspeed ALWAYS
+
+.END
+
 .PROGRAM closetofeeder()
 
 	ATTACH ()

@@ -120,21 +120,6 @@
 	BREAK
 .END
 
-.PROGRAM put_tool()
-
-	AUTO REAL lastspeed
-	AUTO REAL id
-
-	id = 26
-
-	ATTACH ()
-	lastspeed = SPEED(2)
-	SPEED 50 ALWAYS
-	CALL r._puttool(1, id, index)
-	SPEED lastspeed ALWAYS
-
-.END
-
 .PROGRAM get_tool(id)
 
 	ATTACH ()
@@ -313,6 +298,7 @@
 	AUTO $input
 	AUTO n_cmd, $cur_cmd, $cmd_id
 	AUTO t_recv, t_done
+	AUTO $current_pose
 
 	CALL initialize()
 
@@ -362,7 +348,9 @@
 
 		    t_done = TIMER(-3)
 
-		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.2,t_recv,",",/F0.2,t_done)
+		    CALL cur_pose_str($current_pose)
+
+		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.6,t_recv,",",/F0.6,t_done,":",$current_pose)
 		    TYPE "Wrote back about ", $cmd_id
 		END
 
@@ -465,6 +453,20 @@
 
 	speed_factor = params[0]
 	SPEED speed_factor
+
+.END
+
+.PROGRAM cur_pose_str($pose_str_out)
+; Encode curent robot pose as a string 
+
+	AUTO current_pose
+	AUTO p[6]
+
+	HERE current_pose
+	DECOMPOSE p[] = current_pose
+
+
+	$pose_str_out = $ENCODE(/F0.3,p[0],",",/F0.3,p[1],",",/F0.3,p[2],",",/F0.3,p[3],",",/F0.3,p[4],",",/F0.3,p[5])
 
 .END
 
