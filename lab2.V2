@@ -158,4 +158,12 @@
 
 .END
 
+.PROGRAM test_cmd_signal()
+
+
+	SIGNAL sig_new_cmd
+	SIGNAL sig_cmd_done
+
+.END
+
 
