@@ -297,7 +297,7 @@
 	AUTO $cmd_delimiter
 	AUTO $input
 	AUTO n_cmd, $cur_cmd, $cmd_id
-	AUTO t_recv, t_done
+	AUTO DOUBLE t0, t_recv, t_done
 	AUTO $current_pose
 
 	CALL initialize()
@@ -309,6 +309,8 @@
 
 	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 2048"
 	CALL typeiostat("creating server socket", lun)
+
+	t0 = TIMER(-3)
 
 	repeat_loop = TRUE
 	WHILE repeat_loop DO
@@ -324,7 +326,7 @@
 
 	      VALUE 1:
 
-		t_recv = TIMER(3)
+		t_recv = TIMER(-3)-t0
 		TYPE "Received message ", $input
 
 		CALL split_string($input+"", $cmd_delimiter, $commands[], n_cmd)
@@ -346,11 +348,11 @@
 
 		    CALL skillexec_new($cmd_parts[], n_cmd_parts, 1)
 
-		    t_done = TIMER(-3)
+		    t_done = TIMER(-3)-t0
 
 		    CALL cur_pose_str($current_pose)
 
-		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.6,t_recv,",",/F0.6,t_done,":",$current_pose)
+		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.3,t_recv,",",/F0.3,t_done,":",$current_pose)
 		    TYPE "Wrote back about ", $cmd_id
 		END
 
