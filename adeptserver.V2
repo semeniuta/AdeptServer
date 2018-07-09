@@ -127,6 +127,10 @@
 
 .PROGRAM move_to(pose_params[])
 
+; Perorm robot motion to specific pose
+; defined by the values in the supplied array
+
+
 	x = pose_params[0]
 	y = pose_params[1]
 	z = pose_params[2]
@@ -139,6 +143,9 @@
 .END
 
 .PROGRAM move_rel_tool(params[])
+
+; Perorm robot motion with respect to the tool coordinate frame.
+; The relative pose is defined by the values in the supplied array
 
 	HERE now
 
@@ -154,6 +161,9 @@
 .END
 
 .PROGRAM move_rel_world(params[])
+
+; Perorm robot motion with respect to the world coordinate frame.
+; The relative pose is defined by the values in the supplied array
 
 	HERE here_pose
 	DECOMPOSE ha[] = here_pose
@@ -176,6 +186,8 @@
 
 .PROGRAM move_rel_joints(params[])
 
+; Dispace robot joints in amounts specified
+; in the supplied array
 
 	JHERE now1, now2, now3, now4, now5, now6
 
@@ -240,7 +252,10 @@
 
 .PROGRAM initialize()
 
-	CALL defvars()
+; Initialize poses, precision points, and global variables
+; specific to a particular robot setup and attach the robot
+
+	CALL defvars() ; should be difined in setup-specific module
 
 	ATTACH ()
 
@@ -280,6 +295,8 @@
 .END
 
 .PROGRAM server()
+
+; TCP server accepting commands from MasterControlNode
 
 	AUTO handle, lun, repeat_loop
 	AUTO $cmd_delimiter
