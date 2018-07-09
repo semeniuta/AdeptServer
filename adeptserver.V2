@@ -4,6 +4,8 @@
 
 .PROGRAM disable_air()
 
+; Disable air 
+
 	IF SIG(8) THEN
 	    SIGNAL -8
 	END
@@ -11,6 +13,8 @@
 .END
 
 .PROGRAM enable_air()
+
+; Enable air
 
 	IF SIG(8) == FALSE THEN
 	    SIGNAL 8
@@ -114,28 +118,11 @@
 .END
 
 .PROGRAM break()
+
 ; Wrapper aroud BREAK instruction
 ; to be invoked with CALLS 
 
 	BREAK
-.END
-
-.PROGRAM get_tool(id)
-
-	ATTACH ()
-	CALL r1.gettool(id)
-.END
-
-.PROGRAM get_calibtool()
-
-	CALL get_tool(11)
-
-.END
-
-.PROGRAM get_tool26()
-
-	CALL get_tool(26)
-
 .END
 
 .PROGRAM move_to(pose_params[])
@@ -175,6 +162,7 @@
 .END
 
 .PROGRAM create_array(arr[], x1, x2, x3, x4, x5, x6)
+
 ; Creates array out of six real values
 
 	arr[5] = x6
@@ -377,6 +365,9 @@
 
 .PROGRAM define_signals()
 
+; Define global variables for referencing
+; sig_new_cmd and sig_cmd_done soft signals
+
 	GLOBAL sig_new_cmd, sig_cmd_done
 
 	sig_new_cmd = 2225
@@ -459,6 +450,7 @@
 .END
 
 .PROGRAM cur_pose_str($pose_str_out)
+
 ; Encode curent robot pose as a string 
 
 	AUTO current_pose

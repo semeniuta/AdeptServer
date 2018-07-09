@@ -164,6 +164,24 @@
 
 .END
 
+.PROGRAM get_calibtool()
+
+        CALL get_tool(11)
+
+.END
+
+.PROGRAM get_tool(id)
+
+        ATTACH ()
+        CALL r1.gettool(id)
+.END
+
+.PROGRAM get_tool26()
+
+        CALL get_tool(26)
+
+.END
+
 .PROGRAM pick()
 	CALL defvars()
 
