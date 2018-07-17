@@ -481,4 +481,15 @@
 
 .END
 
+.PROGRAM move_joints(params[])
+
+; Move robot to the pose defined by the
+; supplied components of a precision point (joint vector)
+
+
+	JMOVE params[0], params[1], params[2], params[3], params[4], params[5]
+
+
+.END
+
 
