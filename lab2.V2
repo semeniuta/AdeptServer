@@ -166,4 +166,66 @@
 
 .END
 
+.PROGRAM smtdemo()
+
+	AUTO angle, radius, center_x, center_y, here_pose, x, y
+
+	TYPE "Starting"
+
+	ATTACH ()
+
+	SET #orig = #PPOINT(0,-90,180,0,90,0)
+	SET good_focus = TRANS(-339.903,-506.159,152.396,-179.987,90.024,-178.534)
+
+	CALL wait2001()
+	SPEED 20
+	MOVE #orig
+	BREAK
+
+	; move_rel_tool
+	CALL wait2001()
+	SPEED 20
+	MOVE HERE:TRANS(0,0,200,0,0,0)
+	BREAK
+
+	CALL wait2001()
+	SPEED 20
+	MOVE good_focus
+	BREAK
+
+	HERE here_pose
+
+	radius = 20
+	FOR angle = 0 TO 360 STEP 1
+	    x = radius*COS(angle)+0
+	    y = radius*SIN(angle)+0
+	    SPEED 5
+	    MOVE here_pose:TRANS(x,y,0,0,0,0)
+	END
+
+	MOVE here_pose
+
+	TYPE "Done"
+
+
+.END
+
+.PROGRAM wait2001()
+
+	TYPE "Waiting for signal 2001"
+
+
+	WHILE NOT SIG(2001) DO
+	    WAIT
+	END
+
+	WHILE SIG(2001) DO
+	    WAIT
+	END
+
+	TYPE "Moving"
+
+
+.END
+
 
