@@ -228,4 +228,47 @@
 
 .END
 
+.PROGRAM bufsizesrv()
+
+; Experimental server for studying effect of different message sizes
+
+
+	AUTO handle, lun
+	AUTO input_len
+
+	ATTACH (lun, 4) "TCP"
+	CALL typeiostat("establishing TCP server LUN", lun)
+
+	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 128"
+	CALL typeiostat("creating server socket", lun)
+
+	WHILE TRUE DO
+
+	    READ (lun, handle, 0) $input
+
+	    status = IOSTAT(lun)
+
+	    CASE status OF
+
+	      VALUE 100:
+
+		TYPE "Connection established"
+
+	      VALUE 1:
+		TYPE "Received message ", $input
+
+		input_len = LEN($input)
+
+		TYPE "Length =", input_len
+		WRITE (lun, handle) "done:", input_len
+
+	      VALUE 101:
+
+		TYPE "Connection closed"
+
+	    END
+
+	END
+.END
+
 
