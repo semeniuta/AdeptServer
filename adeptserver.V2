@@ -304,6 +304,7 @@
 	AUTO n_cmd, $cur_cmd, $cmd_id
 	AUTO DOUBLE t0, t_recv, t_done
 	AUTO $current_pose
+	AUTO status
 
 	CALL initialize()
 

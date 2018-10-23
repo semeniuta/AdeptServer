@@ -233,13 +233,16 @@
 ; Experimental server for studying effect of different message sizes
 
 
-	AUTO handle, lun
+	AUTO handle
+	AUTO lun
 	AUTO input_len
+	AUTO $input
+	AUTO status
 
 	ATTACH (lun, 4) "TCP"
 	CALL typeiostat("establishing TCP server LUN", lun)
 
-	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 128"
+	FOPEN (lun, 16) "/LOCAL_PORT 1235 /CLIENTS 10 /BUFFER_SIZE 128"
 	CALL typeiostat("creating server socket", lun)
 
 	WHILE TRUE DO
