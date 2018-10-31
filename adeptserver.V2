@@ -61,9 +61,9 @@
 .PROGRAM typeiostat($op_string, lun)
 
 	err_code = IOSTAT(lun)
-	TYPE "After ", $op_string, ":", err_code
+	TYPE "[IOSTAT] after ", $op_string, ":", err_code
 	IF err_code < 0 THEN
-	    TYPE $ERROR(err_code)
+	    TYPE "[ERROR]", $ERROR(err_code)
 	END
 
 .END
@@ -104,7 +104,7 @@
 
 .PROGRAM movehome()
 
-	MOVE #orig
+	MOVE #PPOINT(0,-90,180,0,90,0)
 .END
 
 .PROGRAM moveinterm()
@@ -252,6 +252,8 @@
 
 .PROGRAM initialize()
 
+; DEPRECATED
+
 ; Initialize poses, precision points, and global variables
 ; specific to a particular robot setup and attach the robot
 
@@ -306,9 +308,11 @@
 	AUTO $current_pose
 	AUTO status
 
-	CALL initialize()
+	ATTACH ()
 
 	CALL get_delimiter($cmd_delimiter)
+
+	TYPE ""
 
 	ATTACH (lun, 4) "TCP"
 	CALL typeiostat("establishing TCP server LUN", lun)
