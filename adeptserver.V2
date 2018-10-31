@@ -373,6 +373,10 @@
 
 		TYPE "Connection closed"
 
+	      ANY
+
+		TYPE "IOSTAT =", status
+
 	    END
 
 
