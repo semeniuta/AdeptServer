@@ -480,10 +480,11 @@
 	AUTO n_cmd_parts
 	AUTO $cur_cmd
 	AUTO $cmd_id
-	AUTO $current_pose
+	AUTO $response
 
 	n_cmd = 0
 	n_cmd_parts = 0
+	$response = ""
 
 	t_recv = TIMER(-3)-t0
 	TYPE "Received message ", $input
@@ -509,9 +510,9 @@
 
 	    t_done = TIMER(-3)-t0
 
-	    CALL cur_pose_str($current_pose)
+	    CALL encode_resp($cmd_id, t_recv, t_done, $response)
+	    WRITE (lun, handle) $response
 
-	    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.3,t_recv,",",/F0.3,t_done,":",$current_pose)
 	    TYPE "Wrote back about ", $cmd_id
 	END
 
@@ -521,6 +522,17 @@
 		;    repeat_loop = FALSE
 		;    EXIT
 		;END
+.END
+
+.PROGRAM encode_resp($cmd_id, t_recv, t_done, $out_resp)
+
+	AUTO $current_pose
+	$current_pose = ""
+
+	CALL cur_pose_str($current_pose)
+
+	$out_resp = $ENCODE($cmd_id,":done:",/F0.3,t_recv,",",/F0.3,t_done,":",$current_pose)
+
 .END
 
 
