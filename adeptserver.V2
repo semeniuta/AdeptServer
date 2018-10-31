@@ -303,19 +303,50 @@
 	AUTO lun
 	AUTO DOUBLE t0
 
+	AUTO repeat_loop
+	AUTO handle
+	AUTO $input
+	AUTO $cmd_delimiter
+	AUTO status
+
+	CALL get_delimiter($cmd_delimiter)
+
 	ATTACH ()
 
 	TYPE ""
 
-	ATTACH (lun, 4) "TCP"
-	CALL typeiostat("establishing TCP server LUN", lun)
-
-	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 2048"
-	CALL typeiostat("creating server socket", lun)
+	CALL create_srv_sock(lun)
 
 	t0 = TIMER(-3)
 
-	CALL serverloop(lun, t0)
+	repeat_loop = TRUE
+	WHILE repeat_loop DO
+
+	    READ (lun, handle, 0) $input
+	    status = IOSTAT(lun)
+
+	    CASE status OF
+
+	      VALUE 100:
+
+		TYPE "Connection established"
+
+	      VALUE 1:
+
+		CALL on_recv($input, $cmd_delimiter, lun, handle, t0)
+
+	      VALUE 101:
+
+		TYPE "Connection closed"
+
+	      ANY
+
+		TYPE "IOSTAT =", status
+
+	    END
+
+	END
+
 
 .END
 
@@ -431,47 +462,6 @@
 
 .END
 
-.PROGRAM serverloop(lun, t0)
-
-	AUTO repeat_loop
-	AUTO handle
-	AUTO $input
-	AUTO $cmd_delimiter
-	AUTO status
-
-	CALL get_delimiter($cmd_delimiter)
-
-	repeat_loop = TRUE
-	WHILE repeat_loop DO
-
-	    READ (lun, handle, 0) $input
-	    status = IOSTAT(lun)
-	    CASE status OF
-
-	      VALUE 100:
-
-		TYPE "Connection established"
-
-	      VALUE 1:
-		CALL on_recv($input, $cmd_delimiter, lun, handle, t0)
-
-	      VALUE 101:
-
-		TYPE "Connection closed"
-
-	      ANY
-
-		TYPE "IOSTAT =", status
-
-	    END
-
-
-	END
-
-
-
-.END
-
 .PROGRAM on_recv($input, $cmd_delimiter, lun, handle, t0)
 
 	AUTO t_recv
@@ -532,6 +522,16 @@
 	CALL cur_pose_str($current_pose)
 
 	$out_resp = $ENCODE($cmd_id,":done:",/F0.3,t_recv,",",/F0.3,t_done,":",$current_pose)
+
+.END
+
+.PROGRAM create_srv_sock(lun)
+
+	ATTACH (lun, 4) "TCP"
+	CALL typeiostat("establishing TCP server LUN", lun)
+
+	FOPEN (lun, 16) "/LOCAL_PORT 1234 /CLIENTS 10 /BUFFER_SIZE 2048"
+	CALL typeiostat("creating server socket", lun)
 
 .END
 
