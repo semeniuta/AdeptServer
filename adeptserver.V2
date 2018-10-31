@@ -300,17 +300,10 @@
 
 ; TCP server accepting commands from MasterControlNode
 
-	AUTO handle, lun, repeat_loop
-	AUTO $cmd_delimiter
-	AUTO $input
-	AUTO n_cmd, $cur_cmd, $cmd_id
-	AUTO DOUBLE t0, t_recv, t_done
-	AUTO $current_pose
-	AUTO status
+	AUTO lun
+	AUTO DOUBLE t0
 
 	ATTACH ()
-
-	CALL get_delimiter($cmd_delimiter)
 
 	TYPE ""
 
@@ -322,70 +315,7 @@
 
 	t0 = TIMER(-3)
 
-	repeat_loop = TRUE
-	WHILE repeat_loop DO
-
-	    ;WAIT
-	    READ (lun, handle, 0) $input
-	    status = IOSTAT(lun)
-	    CASE status OF
-
-	      VALUE 100:
-
-		TYPE "Connection established"
-
-	      VALUE 1:
-
-		t_recv = TIMER(-3)-t0
-		TYPE "Received message ", $input
-
-		CALL split_string($input+"", $cmd_delimiter, $commands[], n_cmd)
-
-		TYPE "Number of commands: ", n_cmd
-		FOR cmd_idx = 0 TO n_cmd-1
-		    TYPE "Command", cmd_idx+1, ": ", $commands[cmd_idx]
-		END
-
-		FOR cmd_idx = 0 TO n_cmd-1
-
-		    $cur_cmd = $commands[cmd_idx]
-		    TYPE "Handling command", $cur_cmd
-
-		    CALL split_string($cur_cmd+"", ":", $cmd_parts[], n_cmd_parts)
-
-		    $cmd_id = $cmd_parts[0]
-		    TYPE "ID=", $cmd_id
-
-		    CALL skillexec_new($cmd_parts[], n_cmd_parts, 1)
-
-		    t_done = TIMER(-3)-t0
-
-		    CALL cur_pose_str($current_pose)
-
-		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.3,t_recv,",",/F0.3,t_done,":",$current_pose)
-		    TYPE "Wrote back about ", $cmd_id
-		END
-
-		TYPE "Done with all(", n_cmd, ") commands"
-
-		;IF $input == "stop_server" THEN
-		;    repeat_loop = FALSE
-		;    EXIT
-		;END
-
-	      VALUE 101:
-
-		TYPE "Connection closed"
-
-	      ANY
-
-		TYPE "IOSTAT =", status
-
-	    END
-
-
-	END
-
+	CALL serverloop(lun, t0)
 
 .END
 
@@ -497,6 +427,90 @@
 
 
 	JMOVE params[0], params[1], params[2], params[3], params[4], params[5]
+
+
+.END
+
+.PROGRAM serverloop(lun, t0)
+
+	AUTO repeat_loop
+	AUTO handle
+	AUTO $input
+	AUTO $cmd_delimiter
+	AUTO n_cmd
+	AUTO n_cmd_parts
+	AUTO $cur_cmd
+	AUTO $cmd_id
+	AUTO $current_pose
+	AUTO t_recv
+	AUTO t_done
+	AUTO status
+
+	CALL get_delimiter($cmd_delimiter)
+
+	repeat_loop = TRUE
+	WHILE repeat_loop DO
+
+	    READ (lun, handle, 0) $input
+	    status = IOSTAT(lun)
+	    CASE status OF
+
+	      VALUE 100:
+
+		TYPE "Connection established"
+
+	      VALUE 1:
+
+		t_recv = TIMER(-3)-t0
+		TYPE "Received message ", $input
+
+		CALL split_string($input+"", $cmd_delimiter, $commands[], n_cmd)
+
+		TYPE "Number of commands: ", n_cmd
+		FOR cmd_idx = 0 TO n_cmd-1
+		    TYPE "Command", cmd_idx+1, ": ", $commands[cmd_idx]
+		END
+
+		FOR cmd_idx = 0 TO n_cmd-1
+
+		    $cur_cmd = $commands[cmd_idx]
+		    TYPE "Handling command", $cur_cmd
+
+		    CALL split_string($cur_cmd+"", ":", $cmd_parts[], n_cmd_parts)
+
+		    $cmd_id = $cmd_parts[0]
+		    TYPE "ID=", $cmd_id
+
+		    CALL skillexec_new($cmd_parts[], n_cmd_parts, 1)
+
+		    t_done = TIMER(-3)-t0
+
+		    CALL cur_pose_str($current_pose)
+
+		    WRITE (lun, handle) $cmd_id, ":done:", $ENCODE(/F0.3,t_recv,",",/F0.3,t_done,":",$current_pose)
+		    TYPE "Wrote back about ", $cmd_id
+		END
+
+		TYPE "Done with all(", n_cmd, ") commands"
+
+		;IF $input == "stop_server" THEN
+		;    repeat_loop = FALSE
+		;    EXIT
+		;END
+
+	      VALUE 101:
+
+		TYPE "Connection closed"
+
+	      ANY
+
+		TYPE "IOSTAT =", status
+
+	    END
+
+
+	END
+
 
 
 .END
