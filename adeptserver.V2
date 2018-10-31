@@ -437,9 +437,6 @@
 	AUTO handle
 	AUTO $input
 	AUTO $cmd_delimiter
-
-
-	AUTO t_done
 	AUTO status
 
 	CALL get_delimiter($cmd_delimiter)
@@ -478,11 +475,15 @@
 .PROGRAM on_recv($input, $cmd_delimiter, lun, handle, t0)
 
 	AUTO t_recv
+	AUTO t_done
 	AUTO n_cmd
 	AUTO n_cmd_parts
 	AUTO $cur_cmd
 	AUTO $cmd_id
 	AUTO $current_pose
+
+	n_cmd = 0
+	n_cmd_parts = 0
 
 	t_recv = TIMER(-3)-t0
 	TYPE "Received message ", $input

@@ -274,4 +274,10 @@
 	END
 .END
 
+.PROGRAM play2()
+
+	TYPE n_cmd, n_cmd_parts
+
+.END
+
 
