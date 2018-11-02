@@ -341,7 +341,10 @@
 
 	      ANY
 
-		TYPE "IOSTAT =", status
+		IF status < 0 THEN
+		    repeat_loop = FALSE
+		    TYPE "Stopping the server due to IOSTAT =", status
+		END
 
 	    END
 
