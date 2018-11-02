@@ -303,7 +303,8 @@
 	AUTO lun
 	AUTO DOUBLE t0
 
-	AUTO repeat_loop
+	AUTO repeat_inner
+	AUTO repeat_outer
 	AUTO handle
 	AUTO $input
 	AUTO $cmd_delimiter
@@ -315,41 +316,45 @@
 
 	TYPE ""
 
-	CALL create_srv_sock(lun)
-
 	t0 = TIMER(-3)
 
-	repeat_loop = TRUE
-	WHILE repeat_loop DO
+	repeat_outer = TRUE
+	WHILE repeat_outer DO
 
-	    READ (lun, handle, 0) $input
-	    status = IOSTAT(lun)
+	    CALL create_srv_sock(lun)
 
-	    CASE status OF
+	    repeat_inner = TRUE
+	    WHILE repeat_inner DO
 
-	      VALUE 100:
+		READ (lun, handle, 0) $input
+		status = IOSTAT(lun)
 
-		TYPE "Connection established"
+		CASE status OF
 
-	      VALUE 1:
+		  VALUE 100:
 
-		CALL on_recv($input, $cmd_delimiter, lun, handle, t0)
+		    TYPE "Connection established"
 
-	      VALUE 101:
+		  VALUE 1:
 
-		TYPE "Connection closed"
+		    CALL on_recv($input, $cmd_delimiter, lun, handle, t0)
 
-	      ANY
+		  VALUE 101:
 
-		IF status < 0 THEN
-		    repeat_loop = FALSE
-		    TYPE "Stopping the server due to IOSTAT =", status
+		    TYPE "Connection closed"
+
+		  ANY
+
+		    IF status < 0 THEN
+			repeat_inner = FALSE
+			TYPE "Stopping the server due to IOSTAT =", status
+		    END
+
 		END
 
 	    END
 
 	END
-
 
 .END
 
