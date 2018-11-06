@@ -326,6 +326,8 @@
 	    repeat_inner = TRUE
 	    WHILE repeat_inner DO
 
+		TYPE "Waiting for data / event"
+
 		READ (lun, handle, 0) $input
 		status = IOSTAT(lun)
 
@@ -337,17 +339,21 @@
 
 		  VALUE 1:
 
+		    TYPE "Data received"
 		    CALL on_recv($input, $cmd_delimiter, lun, handle, t0)
 
 		  VALUE 101:
 
 		    TYPE "Connection closed"
 
+		    ;repeat_inner = FALSE
+		    ;TYPE "Restarting the server"
+
 		  ANY
 
 		    IF status < 0 THEN
 			repeat_inner = FALSE
-			TYPE "Stopping the server due to IOSTAT =", status
+			TYPE "Restarting the server due to IOSTAT =", status
 		    END
 
 		END
