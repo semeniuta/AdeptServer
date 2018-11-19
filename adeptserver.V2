@@ -351,6 +351,8 @@
 
 		  ANY
 
+		    TYPE "WEIRD STATUS:", status
+
 		    IF status < 0 THEN
 			repeat_inner = FALSE
 			TYPE "Restarting the server due to IOSTAT =", status
