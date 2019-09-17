@@ -22,8 +22,6 @@ The set of skills that the server is able to invoke comrises all V+ programs tha
 
 ## References
 
-Please refer to the following research [preprint](https://peerj.com/preprints/27552/) for more information about AdeptServer and `pyadept`:
+Please refer to the following research [paper](https://peerj.com/articles/cs-207/) for more information about AdeptServer and `pyadept`:
 
- * Semeniuta O, Falkman P. 2019. Event-driven industrial robot control architecture for the Adept V+ platform. PeerJ Preprints 7:e27552v1 https://doi.org/10.7287/peerj.preprints.27552v1
-
-
+ * Semeniuta, O. and Falkman, P. (2019) ‘Event-driven industrial robot control architecture for the Adept V+ platform’, PeerJ Computer Science, 5, e207. doi: 10.7717/peerj-cs.207.
